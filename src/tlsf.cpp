@@ -199,10 +199,19 @@ bool TlsfAllocator::checkBackwardMerge(TlsfBlockHeader* header) const
 
 TlsfBlockHeader* TlsfAllocator::mergeForward(TlsfBlockHeader* header)
 {
-
+	if (header == nullptr)
+	{
+		return nullptr; // Nothing to merge
+	}
 	TlsfBlock nextTlsfBlock = getNextTlsfBlock(header);
 
+	if (nextTlsfBlock.header == nullptr)
+	{
+		return nullptr; // No next block to merge with
+	}
+
 	//ToDo: Implement merge logic
+
 
 	 
 
@@ -211,8 +220,21 @@ TlsfBlockHeader* TlsfAllocator::mergeForward(TlsfBlockHeader* header)
 
 TlsfBlockHeader* TlsfAllocator::mergeBackward(TlsfBlockHeader* header)
 {
+	if (header == nullptr)
+	{
+		return nullptr; // Nothing to merge
+	}
 
 	TlsfBlock prevTlsfBlock = getPreviousTlsfBlock(header);
 
+	if (prevTlsfBlock.header == nullptr)
+	{
+		return nullptr; // No previous block to merge with
+	}
 	//ToDo: Implement merge logic
+
+
+
+
+
 }
