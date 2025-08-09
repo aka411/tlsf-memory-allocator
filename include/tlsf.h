@@ -8,7 +8,7 @@ struct TlsfBlockHeader
 	
 	The header may be offset from the raw block start address to ensure proper alignment.
 	Make sure to account for this when calculating the size of the block.
-
+	This offset is indicated by the rawOffset field in the header.
 	ie. The address of Header may not be same as the start address of the block.
 
 	*******/
@@ -16,15 +16,18 @@ struct TlsfBlockHeader
 	
 
 
-	TlsfBlockHeader* next; // Pointer to the next block in the free list
-	TlsfBlockHeader* prev; // Pointer to the previous block in the free list
+	TlsfBlockHeader* next = nullptr; // Pointer to the next block in the free list
+	TlsfBlockHeader* prev = nullptr; // Pointer to the previous block in the free list
 	
+	size_t rawOffset = 0; // Offset from the start of the raw block to the header, used for alignment purposes
 
-	size_t size; // Size of user space, not including the header and footer and padding
+	size_t rawBlockSize = 0; // Size of the block, including header and footer and padding
+
+	size_t UserAreaSize = 0; // Size of user space, not including the header and footer and padding
 
 	//since header also has alignment requirements, we need to ensure that the header is aligned properly
 	
-	bool isFree; // Flag to indicate if the block is free or allocated
+	bool isFree = false; // Flag to indicate if the block is free or allocated
 
 };
 
@@ -34,33 +37,100 @@ struct TlsfBlockHeader
 struct TlsfFooter
 {
 
-	size_t size; // Size of the block, including header and footer
+	size_t RawBlocksize = 0; // Size of the block, including header and footer
 
 };
 
 
 struct Layout
 {
-	size_t rawStartAddress;
-	size_t paddingHeader;
-	size_t HeaderStartAddress; // Address of the TlsfBlockHeader(INCLUSIVE)
-	size_t userAreaStartAddress; // Start address of the user area(INCLUSIVE)
-	size_t userAreaExclusiveEnd; // End address of the user area
-	size_t paddingFooter; // Padding after the user area, if any
-	size_t FooterStartAddress; // Address of the TlsfBlockFooter(INCLUSIVE)
-	size_t rawExclusiveEndAddress;
+	size_t rawStartAddress = 0;
+	size_t paddingHeader = 0;
+	size_t HeaderStartAddress = 0; // Address of the TlsfBlockHeader(INCLUSIVE)
+	size_t userAreaStartAddress = 0; // Start address of the user area(INCLUSIVE)
+	size_t userAreaExclusiveEnd = 0; // End address of the user area
+	size_t paddingFooter = 0; // Padding after the user area, if any
+	size_t FooterStartAddress = 0; // Address of the TlsfBlockFooter(INCLUSIVE)
+	size_t rawExclusiveEndAddress = 0;
 };
 
 
 
+
+struct TlsfBlock
+{
+	// This structure represents a block in the TLSF allocator.
+	// It contains a header, user area, and footer.
+	size_t rawStartAddress = 0; // Raw start address of the block, used for alignment and calculations
+	TlsfBlockHeader* header = nullptr; // Pointer to the block header
+	void* userArea = nullptr; // Pointer to the user area
+
+	TlsfFooter* footer = nullptr; // Pointer to the block footer
+};
+
 /*
 
-Block Header Layout:
+ General user allocatable Block Layout:
 +--------------------------------------------------------------------------------------------------------------------+
-| Padding(if any) |  TlsfBlockHeader    |    User Area     |     Padding (if any)    |    TlsfBlockFooter(size_t)    |
+| Padding(if any) |  TlsfBlockHeader    |    User Area     |     Padding (if any)    |    TlsfBlockFooter            |
 +--------------------------------------------------------------------------------------------------------------------+
 
 */
+
+
+
+
+/*
+* 
+* Special non-allocatable Block layout:
+	
+	Start Block :-
++-----------------------------------------------------------------------------------------------------------------------------+
+| Padding(if any) |  TlsfBlockHeader    |    User Area (0 bytes)    |     Padding (if any)    |    TlsfBlockFooter            |
++-----------------------------------------------------------------------------------------------------------------------------+
+
+ 
+	End Block :- 
++--------------------------------------------------------------------------------------------------------------------+
+| Padding(if any) |  TlsfBlockHeader    |    User Area ( 0 bytes)    |            Remaining bytes                    |
++--------------------------------------------------------------------------------------------------------------------+
+
+
+ These two blocks are special blocks that mark the end and start of the memory pool.
+ 
+ 
+ Start Block
+
+   The Start Block marks the beginning of the memory pool. It's an un-allocatable block thats meant to
+   signal the allocator that it has reached the start of the memory pool.
+ 
+ 
+ End Block
+   The End Block marks the end of the memory pool. Similar to the start block, 
+   it's a block that an allocator shouldn't try to use for a normal allocation and signals end of memory pool.
+
+* 
+*/
+
+
+
+
+
+
+struct TlsfBitMap
+{
+	// This structure is used to manage the free blocks in the TLSF allocator.
+
+
+	
+};
+
+
+
+
+
+
+
 
 class TlsfAllocator
 {
@@ -74,6 +144,26 @@ private:
 
 
 	Layout calculateLayout(void* ptr, size_t size) const;
+
+	void storeInFreeList(TlsfBlockHeader* header);
+
+
+
+	TlsfBlock getNextTlsfBlock(TlsfBlockHeader* header) const;
+
+	TlsfBlock getPreviousTlsfBlock(TlsfBlockHeader* header) const;
+
+
+
+
+	bool checkForwardMerge(TlsfBlockHeader* header) const;
+	bool checkBackwardMerge(TlsfBlockHeader* header) const;
+
+	TlsfBlockHeader* mergeForward(TlsfBlockHeader* header);
+	TlsfBlockHeader* mergeBackward(TlsfBlockHeader* header);
+
+
+
 
 public:
 

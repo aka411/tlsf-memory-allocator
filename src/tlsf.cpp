@@ -10,9 +10,32 @@ void* TlsfAllocator::allocate(size_t size)
 
 void TlsfAllocator::deallocate(void* ptr)
 {
-	//get header
-	//see if it can be collased
-	//if not store in free list
+	if (ptr == nullptr)
+	{
+		return; // Nothing to deallocate
+	}
+	
+	const const size_t headerRawAddress = reinterpret_cast<size_t>(ptr) - BLOCK_HEADER_SIZE;
+
+	TlsfBlockHeader* header = reinterpret_cast<TlsfBlockHeader*>(headerRawAddress);
+
+	while (checkForwardMerge(header))
+	{
+		// Merge with the next block
+		header = mergeForward(header);
+	}
+
+	while (checkBackwardMerge(header))
+	{
+		// Merge with the previous block
+		header = mergeBackward(header);
+	}
+
+	// At this point, the header is merged with both forward and backward blocks if possible
+	 
+	//store in free list
+	storeInFreeList(header);
+
 }
 
 
@@ -20,6 +43,11 @@ Layout TlsfAllocator::calculateLayout(void* ptr, size_t size) const
 {
 	Layout layout;
 
+	if (ptr == nullptr || size == 0)
+	{
+		// Invalid input, return an empty layout
+		return layout;
+	}
 	// range is always defined as [start, end)
 
 
@@ -39,7 +67,7 @@ Layout TlsfAllocator::calculateLayout(void* ptr, size_t size) const
 	layout.userAreaExclusiveEnd = layout.userAreaStartAddress + size;
 
 	// Padding after user area
-	layout.paddingFooter = (ALIGNMENT_REQ_FOOTER - ((layout.userAreaExclusiveEnd + FOOTER_SIZE) % ALIGNMENT_REQ_FOOTER)) % ALIGNMENT_REQ_FOOTER;
+	layout.paddingFooter = (ALIGNMENT_REQ_FOOTER - ((layout.userAreaExclusiveEnd ) % ALIGNMENT_REQ_FOOTER)) % ALIGNMENT_REQ_FOOTER;
 
 	// Footer start address
 	layout.FooterStartAddress = layout.userAreaExclusiveEnd + layout.paddingFooter;
@@ -48,4 +76,143 @@ Layout TlsfAllocator::calculateLayout(void* ptr, size_t size) const
 	layout.rawExclusiveEndAddress = layout.FooterStartAddress + FOOTER_SIZE;
 
 	return layout;
+}
+
+
+
+TlsfBlock TlsfAllocator::getNextTlsfBlock(TlsfBlockHeader* header) const
+{
+
+	TlsfBlock nextTlsfBlock;
+
+	if (header == nullptr)
+	{
+		return nextTlsfBlock; // Return an empty block if the header is null
+	}
+
+	const size_t nextBlockRawAddress = (reinterpret_cast<size_t>(header) - (header->rawOffset)) + header->rawBlockSize;
+
+
+	const size_t nextBlockHeaderAddress = nextBlockRawAddress + ((ALIGNMENT_REQ_BLOCK_HEADER - (nextBlockRawAddress % ALIGNMENT_REQ_BLOCK_HEADER)) % ALIGNMENT_REQ_BLOCK_HEADER);
+
+	const TlsfBlockHeader* nextHeader = reinterpret_cast<TlsfBlockHeader*>(nextBlockHeaderAddress);
+
+	const size_t nextBlockFooterAddress = nextBlockRawAddress + header->rawBlockSize - FOOTER_SIZE;
+
+	nextTlsfBlock.header = nextHeader;
+	nextTlsfBlock.userArea = reinterpret_cast<void*>(nextBlockHeaderAddress + BLOCK_HEADER_SIZE);
+	nextTlsfBlock.footer = reinterpret_cast<TlsfFooter*>(nextBlockFooterAddress);
+
+	return nextTlsfBlock;
+}
+
+TlsfBlock TlsfAllocator::getPreviousTlsfBlock(TlsfBlockHeader* header) const
+{
+
+	TlsfBlock prevTlsfBlock;
+	if (header == nullptr)
+	{
+		return prevTlsfBlock; // Return an empty block if the header is null
+	}
+
+	const size_t blockRawAddress = reinterpret_cast<size_t>(header) - header->rawOffset;
+
+	const size_t prevBlockFooterAddress = blockRawAddress - FOOTER_SIZE;
+
+	const TlsfFooter* prevFooter = reinterpret_cast<TlsfFooter*>(prevBlockFooterAddress);
+
+
+
+	const size_t prevBlockRawSize = prevFooter->RawBlocksize;
+
+	const size_t prevBlockRawAddress = blockRawAddress - prevBlockRawSize;
+
+	const size_t prevBlockHeaderAddress = prevBlockRawAddress + ((ALIGNMENT_REQ_BLOCK_HEADER - (prevBlockRawAddress % ALIGNMENT_REQ_BLOCK_HEADER)) % ALIGNMENT_REQ_BLOCK_HEADER);
+
+
+	const TlsfBlockHeader* prevHeader = reinterpret_cast<TlsfBlockHeader*>(prevBlockHeaderAddress);
+
+	prevTlsfBlock.header = prevHeader;
+	prevTlsfBlock.userArea = reinterpret_cast<void*>(prevBlockHeaderAddress + BLOCK_HEADER_SIZE);
+	prevTlsfBlock.footer = reinterpret_cast<TlsfFooter*>(prevBlockFooterAddress);
+
+	return prevTlsfBlock;
+
+
+}
+
+
+
+
+bool TlsfAllocator::checkForwardMerge(TlsfBlockHeader* header) const
+{
+	if (header == nullptr)
+	{
+		return false; // No block to merge with
+	}
+
+
+	TlsfBlock nextTlsfBlock = getNextTlsfBlock(header);
+
+	const TlsfBlockHeader* nextHeader = nextTlsfBlock.header;
+
+	if (nextHeader->isFree)
+	{
+		// Check if the next block is free and can be merged
+		return true;
+	}
+
+	return false;
+
+}
+
+
+bool TlsfAllocator::checkBackwardMerge(TlsfBlockHeader* header) const
+{
+	if (header == nullptr)
+	{
+		return false; // No block to merge with
+	}
+
+	TlsfBlock prevTlsfBlock = getPreviousTlsfBlock(header);
+	const TlsfBlockHeader* prevHeader = prevTlsfBlock.header;
+
+	if (prevHeader->isFree)
+	{
+		// Check if the previous block is free and can be merged
+		return true;
+	}
+
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+TlsfBlockHeader* TlsfAllocator::mergeForward(TlsfBlockHeader* header)
+{
+
+	TlsfBlock nextTlsfBlock = getNextTlsfBlock(header);
+
+	//ToDo: Implement merge logic
+
+	 
+
+}
+
+
+TlsfBlockHeader* TlsfAllocator::mergeBackward(TlsfBlockHeader* header)
+{
+
+	TlsfBlock prevTlsfBlock = getPreviousTlsfBlock(header);
+
+	//ToDo: Implement merge logic
 }
