@@ -37,7 +37,7 @@ struct TlsfBlockHeader
 struct TlsfFooter
 {
 
-	size_t RawBlocksize = 0; // Size of the block, including header and footer
+	size_t rawBlocksize = 0; // Size of the block, including header and footer
 
 };
 
