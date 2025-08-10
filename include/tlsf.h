@@ -137,6 +137,11 @@ private:
 	const uint8_t ALIGNMENT_REQ_FOOTER = alignof(TlsfFooter);
 
 
+	//currently second level is 8 sub-bins;
+
+	Uint32_t m_firstLevelBitmap = 0; // Bitmap for the first level of free blocks
+	Uint8_t m_secondLevelBitmap[32] = { 0 }; // Bitmap for the second level of free blocks,
+
 	Layout calculateLayout(void* ptr, size_t size) const;
 
 	void storeInFreeList(TlsfBlockHeader* header);
