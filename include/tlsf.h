@@ -78,11 +78,9 @@ struct TlsfBlock
 */
 
 
-
-
 /*
-* 
-* Special non-allocatable Block layout:
+
+ Special non-allocatable Block layout:
 	
 	Start Block :-
 +-----------------------------------------------------------------------------------------------------------------------------+
@@ -109,7 +107,7 @@ struct TlsfBlock
    The End Block marks the end of the memory pool. Similar to the start block, 
    it's a block that an allocator shouldn't try to use for a normal allocation and signals end of memory pool.
 
-* 
+ 
 */
 
 
@@ -117,7 +115,6 @@ struct TlsfBlock
 
 
 	
-};
 
 
 
