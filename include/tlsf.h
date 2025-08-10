@@ -116,12 +116,6 @@ struct TlsfBlock
 
 
 
-
-struct TlsfBitMap
-{
-	// This structure is used to manage the free blocks in the TLSF allocator.
-
-
 	
 };
 
