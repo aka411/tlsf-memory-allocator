@@ -150,7 +150,7 @@ private:
 
 	TlsfBlock getNextTlsfBlock(TlsfBlockHeader* header) const;
 
-	TlsfBlock getPreviousTlsfBlock(TlsfBlockHeader* header) const;
+	void storeInFreeList(TlsfBlockHeader* header);
 
 
 

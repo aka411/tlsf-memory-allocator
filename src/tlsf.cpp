@@ -80,6 +80,60 @@ Layout TlsfAllocator::calculateLayout(void* ptr, size_t size) const
 
 
 
+void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
+{
+	if (header == nullptr)
+	{
+		return; 
+	}
+
+
+
+
+	size_t firstLevelIndex = getFirstLevelIndex(header->UserAreaSize);
+	size_t secondLevelIndex = getSecondLevelIndex(header->UserAreaSize);
+
+	//ToDO : check inavlid index
+
+
+
+
+	
+
+
+	if (m_freeList[firstLevelIndex][secondLevelIndex] == nullptr) // If the sub-bin is empty
+	{
+
+		//Case 1: Second level sub-bin is empty
+			// Add this header as first in sublevel index, check if bitmaps are correctly set and set it
+			// or avoid check and set it, can say some if statements
+
+		m_freeList[firstLevelIndex][secondLevelIndex] = header; // Set the header as the first block in the sub-bin
+
+		header->nextFreeBlock = nullptr; // No next block
+		header->prevFreeBlock = nullptr; // No previous block
+
+		m_secondLevelBitmap[firstLevelIndex] |= (1 << secondLevelIndex); // Set the second level bitmap for this size
+		m_firstLevelBitmap |= (1 << firstLevelIndex);
+	}
+	else // If the sub-bin is not empty
+	{
+
+		//Case 2: Sub-bin is not empty ,add this block to first in sub-bin and update the next and previous pointers 
+
+		TlsfBlockHeader* firstHeader = m_freeList[firstLevelIndex][secondLevelIndex];
+		header->nextFreeBlock = firstHeader; // Set the new header as the first block in the sub-bin
+		firstHeader->prevFreeBlock = header; // Update the previous pointer of the first block
+		m_freeList[firstLevelIndex][secondLevelIndex] = header; // Update the free list to point to the new header
+	}
+
+	return;
+
+
+}
+
+
+
 TlsfBlock TlsfAllocator::getNextTlsfBlock(TlsfBlockHeader* header) const
 {
 
