@@ -45,12 +45,16 @@ struct TlsfFooter
 struct Layout
 {
 	size_t rawStartAddress = 0;
+
 	size_t paddingHeader = 0;
 	size_t HeaderStartAddress = 0; // Address of the TlsfBlockHeader(INCLUSIVE)
+
 	size_t userAreaStartAddress = 0; // Start address of the user area(INCLUSIVE)
 	size_t userAreaExclusiveEnd = 0; // End address of the user area
+
 	size_t paddingFooter = 0; // Padding after the user area, if any
 	size_t FooterStartAddress = 0; // Address of the TlsfBlockFooter(INCLUSIVE)
+
 	size_t rawExclusiveEndAddress = 0;
 };
 
