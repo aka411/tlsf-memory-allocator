@@ -151,6 +151,7 @@ private:
 	TlsfBlock getNextTlsfBlock(TlsfBlockHeader* header) const;
 
 	void storeInFreeList(TlsfBlockHeader* header);
+	void removeFromFreeList(TlsfBlockHeader* CurrHeader);
 
 
 

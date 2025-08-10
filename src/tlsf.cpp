@@ -134,6 +134,70 @@ void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
 
 
 
+
+
+void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* CurrHeader)
+{
+
+	if (CurrHeader == nullptr)
+	{
+		return;
+	}
+
+
+	TlsfBlockHeader* nextHeader = CurrHeader->nextFreeBlock;
+	TlsfBlockHeader* prevHeader = CurrHeader->prevFreeBlock;
+
+	if (  prevHeader != nullptr && nextHeader != nullptr ) // Case 1: Both next and previous headers exist in the sub-bin
+	{
+		prevHeader->nextFreeBlock = nextHeader;
+		nextHeader->prevFreeBlock = prevHeader;
+
+
+	}
+	else if (prevHeader == nullptr && nextHeader != nullptr) // case 2: Only next header exsits and currHeader is the first in the second level sub-bin
+	{
+		
+
+		size_t firstLevelIndex = getFirstLevelIndex(CurrHeader->UserAreaSize);
+		size_t secondLevelIndex = getSecondLevelIndex(CurrHeader->UserAreaSize);
+
+		freeList[firstLevelIndex][secondLevelIndex] = nextHeader; // Update the free list to point to the next header
+
+		nextHeader->prevFreeBlock = nullptr; // Clear the previous pointer of the next header
+
+
+	}
+	else if (prevHeader == nullptr && nextHeader == nullptr) // case 3 : currHeader is the only free block in second Level sub-bin
+	{
+
+
+
+		size_t firstLevelIndex = getFirstLevelIndex(CurrHeader->UserAreaSize);
+		size_t secondLevelIndex = getSecondLevelIndex(CurrHeader->UserAreaSize);
+
+		//set Second Level sub-bin to nullptr and second level bitmap to 0
+
+		m_freeList[firstLevelIndex][secondLevelIndex] = nullptr; // Update the free list to point to nullptr, since the list is now empty
+		m_secondLevelBitmap[firstLevelIndex] &= ~(1 << secondLevelIndex); // Clear the second level bitmap for this size
+
+
+		if (checkIfSecondLevelEmpty(firstLevelIndex)) // Check if the second level is empty and update the first level bitmap accordingly
+		{
+			m_firstLevelBitmap &= ~(1 << firstLevelIndex); // Clear the first level bitmap for this size
+		}
+
+	}
+
+	//common for all conditions
+	CurrHeader->nextFreeBlock = nullptr; // Clear the next pointer of the current header
+	CurrHeader->prevFreeBlock = nullptr; // Clear the previous pointer of the current header
+
+	return;
+}
+
+
+
 TlsfBlock TlsfAllocator::getNextTlsfBlock(TlsfBlockHeader* header) const
 {
 
