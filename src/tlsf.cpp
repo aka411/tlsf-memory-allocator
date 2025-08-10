@@ -15,14 +15,8 @@ void TlsfAllocator::deallocate(void* ptr)
 		return; // Nothing to deallocate
 	}
 	
-	const const size_t headerRawAddress = reinterpret_cast<size_t>(ptr) - BLOCK_HEADER_SIZE;
 
-	TlsfBlockHeader* header = reinterpret_cast<TlsfBlockHeader*>(headerRawAddress);
 
-	while (checkForwardMerge(header))
-	{
-		// Merge with the next block
-		header = mergeForward(header);
 	}
 
 	while (checkBackwardMerge(header))
