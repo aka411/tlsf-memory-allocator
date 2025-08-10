@@ -16,8 +16,8 @@ struct TlsfBlockHeader
 	
 
 
-	TlsfBlockHeader* next = nullptr; // Pointer to the next block in the free list
-	TlsfBlockHeader* prev = nullptr; // Pointer to the previous block in the free list
+	TlsfBlockHeader* nextFreeBlock = nullptr; // Pointer to the next block in the free list
+	TlsfBlockHeader* prevFreeBlock = nullptr; // Pointer to the previous block in the free list
 	
 	size_t rawOffset = 0; // Offset from the start of the raw block to the header, used for alignment purposes
 
@@ -37,7 +37,7 @@ struct TlsfBlockHeader
 struct TlsfFooter
 {
 
-	size_t RawBlocksize = 0; // Size of the block, including header and footer
+	size_t rawBlocksize = 0; // Size of the block, including header and footer
 
 };
 
@@ -114,12 +114,6 @@ struct TlsfBlock
 
 
 
-
-
-
-struct TlsfBitMap
-{
-	// This structure is used to manage the free blocks in the TLSF allocator.
 
 
 	
