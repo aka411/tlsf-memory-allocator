@@ -16,8 +16,8 @@ struct TlsfBlockHeader
 	
 
 
-	TlsfBlockHeader* next = nullptr; // Pointer to the next block in the free list
-	TlsfBlockHeader* prev = nullptr; // Pointer to the previous block in the free list
+	TlsfBlockHeader* nextFreeBlock = nullptr; // Pointer to the next block in the free list
+	TlsfBlockHeader* prevFreeBlock = nullptr; // Pointer to the previous block in the free list
 	
 	size_t rawOffset = 0; // Offset from the start of the raw block to the header, used for alignment purposes
 
