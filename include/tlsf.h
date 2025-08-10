@@ -142,6 +142,9 @@ private:
 	Uint32_t m_firstLevelBitmap = 0; // Bitmap for the first level of free blocks
 	Uint8_t m_secondLevelBitmap[32] = { 0 }; // Bitmap for the second level of free blocks,
 
+	TlsfBlockHeader* m_freeList[32][8] = { nullptr }; // Free list for managing free blocks
+
+
 	Layout calculateLayout(void* ptr, size_t size) const;
 
 	void storeInFreeList(TlsfBlockHeader* header);
