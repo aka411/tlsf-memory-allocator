@@ -1,15 +1,14 @@
 #pragma once
-#include <cstddef>
+#include <cstdint>
 
 struct TlsfBlockHeader
 {
 
 	/*******WARNING: 	
 	
-	The header may be offset from the raw block start address to ensure proper alignment.
-	Make sure to account for this when calculating the size of the block.
+	The header is offset from the raw block start address to ensure proper alignment of Header if  raw block start address is not a Header aligned address.
 	This offset is indicated by the rawOffset field in the header.
-	ie. The address of Header may not be same as the start address of the block.
+	ie. The address of Header may not be same as the start address of the raw block.
 
 	*******/
 
@@ -19,15 +18,15 @@ struct TlsfBlockHeader
 	TlsfBlockHeader* nextFreeBlock = nullptr; // Pointer to the next block in the free list
 	TlsfBlockHeader* prevFreeBlock = nullptr; // Pointer to the previous block in the free list
 	
-	size_t rawOffset = 0; // Offset from the start of the raw block to the header, used for alignment purposes
+	size_t rawOffset = 0; // Offset from the start of the raw block to the header,this offset is there because of the Tlsf header alignment requirements.
 
-	size_t rawBlockSize = 0; // Size of the block, including header and footer and padding
+	size_t rawBlockSize = 0; // Size of the block, including header and footer and all padding
 
-	size_t UserAreaSize = 0; // Size of user space, not including the header and footer and padding
+	size_t UserAreaSize = 0; //Size of the area usable by the user
 
-	//since header also has alignment requirements, we need to ensure that the header is aligned properly
+
 	
-	bool isFree = false; // Flag to indicate if the block is free or allocated
+	bool isFree = false; 
 
 };
 
@@ -37,7 +36,7 @@ struct TlsfBlockHeader
 struct TlsfFooter
 {
 
-	size_t rawBlocksize = 0; // Size of the block, including header and footer
+	size_t rawBlocksize = 0; //including header and footer and all padding jsut like in TlsfBlockHeader
 
 };
 
@@ -50,10 +49,10 @@ struct Layout
 	size_t HeaderStartAddress = 0; // Address of the TlsfBlockHeader(INCLUSIVE)
 
 	size_t userAreaStartAddress = 0; // Start address of the user area(INCLUSIVE)
-	size_t userAreaExclusiveEnd = 0; // End address of the user area
+	size_t userAreaExclusiveEnd = 0; 
 
 	size_t paddingFooter = 0; // Padding after the user area, if any
-	size_t FooterStartAddress = 0; // Address of the TlsfBlockFooter(INCLUSIVE)
+	size_t footerStartAddress = 0; // Address of the TlsfBlockFooter(INCLUSIVE)
 
 	size_t rawExclusiveEndAddress = 0;
 };
@@ -63,13 +62,14 @@ struct Layout
 
 struct TlsfBlock
 {
-	// This structure represents a block in the TLSF allocator.
-	// It contains a header, user area, and footer.
-	size_t rawStartAddress = 0; // Raw start address of the block, used for alignment and calculations
-	TlsfBlockHeader* header = nullptr; // Pointer to the block header
-	void* userArea = nullptr; // Pointer to the user area
+	
 
-	TlsfFooter* footer = nullptr; // Pointer to the block footer
+	size_t rawStartAddress = 0;
+	TlsfBlockHeader* header = nullptr; 
+
+	void* userArea = nullptr; 
+
+	TlsfFooter* footer = nullptr; 
 };
 
 /*
@@ -118,9 +118,9 @@ struct TlsfBlock
 
 
 
-	
 
 
+class TlsfAllocatorInternalTest;//for testing
 
 
 
@@ -129,7 +129,11 @@ struct TlsfBlock
 
 class TlsfAllocator
 {
-private:
+protected:
+
+
+	
+	friend TlsfAllocatorInternalTest; // for testing
 
 	const size_t BLOCK_HEADER_SIZE = sizeof(TlsfBlockHeader);
 	const uint8_t ALIGNMENT_REQ_BLOCK_HEADER = alignof(TlsfBlockHeader);
@@ -138,26 +142,46 @@ private:
 	const uint8_t ALIGNMENT_REQ_FOOTER = alignof(TlsfFooter);
 
 
+
+	const size_t MINIMUM_VALID_TLSF_BLOCK_RAW_SIZE = (ALIGNMENT_REQ_BLOCK_HEADER - 1) + BLOCK_HEADER_SIZE + 4 /*USER BYTES*/ + (ALIGNMENT_REQ_FOOTER - 1) + FOOTER_SIZE;
+
+
+
+
+	TlsfBlock m_startTlsfBlock ;
+	TlsfBlock m_endTlsfBlock ;
+
+
+
 	//currently second level is 8 sub-bins;
 
-	Uint32_t m_firstLevelBitmap = 0; // Bitmap for the first level of free blocks
-	Uint8_t m_secondLevelBitmap[32] = { 0 }; // Bitmap for the second level of free blocks,
+	uint32_t m_firstLevelBitmap = 0; // Bitmap for the first level of free blocks
+	uint8_t m_secondLevelBitmap[32] = { 0 }; // Bitmap for the second level of free blocks,
+
+	const size_t m_subBinCount = sizeof(m_secondLevelBitmap[0]) * 8;
 
 	TlsfBlockHeader* m_freeList[32][8] = { nullptr }; // Free list for managing free blocks
 
 
-	Layout calculateLayout(void* ptr, size_t size) const;
+	Layout calculateLayout(const size_t startAddress, const size_t size) const;
 
-	void storeInFreeList(TlsfBlockHeader* header);
+	//this method assumes that  (rawEndAddress - FOOTER_SIZE) is aligned for footer else we will have problem finding footer and header
+	TlsfBlockHeader* createTlsfBlock(const size_t rawStartAddress, const size_t rawEndAddress) const;
+
+	bool checkIfSecondLevelEmpty(size_t firstLevelIndex) const;
+
+	size_t getFirstLevelIndex(size_t size) const;
+	size_t getSecondLevelIndex(size_t size) const;
 
 
 
-	TlsfBlock getNextTlsfBlock(TlsfBlockHeader* header) const;
 
 	void storeInFreeList(TlsfBlockHeader* header);
 	void removeFromFreeList(TlsfBlockHeader* CurrHeader);
 
 
+	TlsfBlock getNextTlsfBlock(TlsfBlockHeader* header) const;//rename to getNextMemoryBlock?
+	TlsfBlock getPreviousTlsfBlock(TlsfBlockHeader* header) const;
 
 
 	bool checkForwardMerge(TlsfBlockHeader* header) const;
@@ -166,11 +190,17 @@ private:
 	TlsfBlockHeader* mergeForward(TlsfBlockHeader* header);
 	TlsfBlockHeader* mergeBackward(TlsfBlockHeader* header);
 
+	TlsfBlockHeader* coalesceBlocks(TlsfBlockHeader* currHeader);
 
+	TlsfBlockHeader* getFreeBlock(const size_t requiredSize);
 
 
 public:
 
+	TlsfAllocator(const size_t memoryPoolSize);
+
+	~TlsfAllocator();
+
 	void* allocate(size_t size);
 	void deallocate(void* ptr);
-}
+};
