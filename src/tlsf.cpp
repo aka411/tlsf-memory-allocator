@@ -568,13 +568,20 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 
 				TlsfBlockHeader* header = m_freeList[fLIndex][sLI];
 
-				//ToDo : check if nullptr
+				while (header != nullptr)
+				{
+					if (header->UserAreaSize >= requiredSize)
+					{
+						removeFromFreeList(header);
+						return header;
+					}
+					header = header->nextFreeBlock;
+				}
 
-				removeFromFreeList(header);
 
-				return header;
+
 			}
-			sLI++;
+			++sLI;
 			if (sLI >= sizeof(secondLevelBitMap) * 8) break;
 
 		}
@@ -604,11 +611,16 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	
 					TlsfBlockHeader* header = m_freeList[newFLIndex][sLI];
 					
-					if (header == nullptr) return nullptr;
 
+					while (header != nullptr)
+					{
+						if (header->UserAreaSize >= requiredSize)
+						{
 					removeFromFreeList(header);
-					
 					return header;
+				}
+						header = header->nextFreeBlock;
+					}
 				}
 				sLI++;
 				if (sLI >= sizeof(secondLevelBitMap) * 8) break;
