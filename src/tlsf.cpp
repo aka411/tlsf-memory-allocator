@@ -345,7 +345,6 @@ TlsfBlock TlsfAllocator::getPreviousTlsfBlock(TlsfBlockHeader* header) const
 
 	prevTlsfBlock.header = prevHeader;
 	prevTlsfBlock.userArea = reinterpret_cast<void*>(prevBlockHeaderAddress + BLOCK_HEADER_SIZE);
-	//prevTlsfBlock.footerPaddingAddress = reinterpret_cast<void*>(prevBlockRawAddress + prevHeader->UserAreaSize);
 	prevTlsfBlock.footer = reinterpret_cast<TlsfFooter*>(prevBlockFooterAddress);
 
 	return prevTlsfBlock;
@@ -565,6 +564,8 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 				//get the block from that sli
 				//remove from freelist
 
+				//need to find the first fit 
+
 				TlsfBlockHeader* header = m_freeList[fLIndex][sLI];
 
 				//ToDo : check if nullptr
@@ -730,16 +731,24 @@ TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 TlsfAllocator::~TlsfAllocator()
 {
 
-	//return the start block marker to os or malloc
+	//return the whole memory  to os or malloc
 
 	//void* poolPtr = reinterpret_cast<void*>(m_startTlsfBlock.rawStartAddress);
 
 	//free(poolPtr);
 }
 
+
+
+
+
+
+
 void* TlsfAllocator::allocate(size_t size)
 {
 	
+
+
 	TlsfBlockHeader* allocatedBlock = getFreeBlock(size);
 	
 	if (allocatedBlock == nullptr) return nullptr;// allocation failed
@@ -755,7 +764,7 @@ void* TlsfAllocator::allocate(size_t size)
 
 	const Layout bestFitLayout = calculateLayout(rawStartAddress, size);
 
-	const size_t remainingBytes = allocatedBlock->rawBlockSize - (bestFitLayout.rawExclusiveEndAddress - bestFitLayout.rawStartAddress);
+	const size_t remainingBytes = allocatedBlock->rawBlockSize - (bestFitLayout.rawExclusiveEndAddress - bestFitLayout.rawStartAddress);//unsafe,can wrap around
 
 
 	//check if the difference between best fit calculated and current allocated has greater difference than a predefined minimum allocatable block
