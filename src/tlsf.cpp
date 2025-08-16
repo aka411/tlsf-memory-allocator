@@ -63,7 +63,7 @@ size_t TlsfAllocator::getSecondLevelIndex(size_t size) const
 {
 	const size_t flI = getFirstLevelIndex(size);
 	
-
+	
 
 
 	const size_t firstLevelBinRangeSize = (1ULL << flI);
@@ -137,7 +137,7 @@ TlsfBlockHeader* TlsfAllocator::createTlsfBlock(const size_t rawStartAddress, co
 
 	const size_t userAreaEndAddress = footerStartAddress; // no footer padding ,so they overlap
 
-	
+
 	
 	const size_t userAreaSize = userAreaEndAddress - userAreaStartAddress;
 
@@ -563,7 +563,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 			{
 				//get the block from that sli
 				//remove from freelist
-
+				
 				//need to find the first fit 
 
 				TlsfBlockHeader* header = m_freeList[fLIndex][sLI];
@@ -579,7 +579,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 				}
 
 
-
+			
 			}
 			++sLI;
 			if (sLI >= sizeof(secondLevelBitMap) * 8) break;
@@ -616,9 +616,9 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 					{
 						if (header->UserAreaSize >= requiredSize)
 						{
-					removeFromFreeList(header);
-					return header;
-				}
+							removeFromFreeList(header);
+							return header;
+						}
 						header = header->nextFreeBlock;
 					}
 				}
@@ -758,7 +758,7 @@ TlsfAllocator::~TlsfAllocator()
 
 void* TlsfAllocator::allocate(size_t size)
 {
-	
+
 
 
 	TlsfBlockHeader* allocatedBlock = getFreeBlock(size);

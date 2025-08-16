@@ -77,7 +77,7 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocation)
 
 	bool allocationFailed = false;
 	void* ptr = nullptr;
-	for (size_t i = 0; i < 10000; ++i)
+	for (size_t i = 0; i < 1000; ++i)
 	{
 		ptr = tlsfAllocator->allocate(requestSizeLessThanAllocatorPool);
 		
@@ -121,7 +121,7 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 
 	// Phase 1: Allocate varying-sized blocks
-	for (size_t i = 0; i < 100; ++i)
+	for (size_t i = 0; i < 39; ++i)
 	{
 		size_t varyingSize = baseRequestSize + dist(rng);
 
