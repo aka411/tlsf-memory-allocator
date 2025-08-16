@@ -733,9 +733,9 @@ TlsfAllocator::~TlsfAllocator()
 
 	//return the whole memory  to os or malloc
 
-	//void* poolPtr = reinterpret_cast<void*>(m_startTlsfBlock.rawStartAddress);
+	void* poolPtr = reinterpret_cast<void*>(m_startTlsfBlock.rawStartAddress);
 
-	//free(poolPtr);
+	free(poolPtr);
 }
 
 
