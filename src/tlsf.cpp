@@ -137,11 +137,10 @@ TlsfBlockHeader* TlsfAllocator::createTlsfBlock(const size_t rawStartAddress, co
 
 	const size_t userAreaEndAddress = footerStartAddress; // no footer padding ,so they overlap
 
-	std::cout << "\n start and end  : " << rawStartAddress <<"   " << rawEndAddress << std::endl;
+	
 	
 	const size_t userAreaSize = userAreaEndAddress - userAreaStartAddress;
 
-	std::cout << "\n remainingBlock : " << userAreaSize << std::endl;
 
 
 
@@ -551,7 +550,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	
 	const size_t fLIndex = getFirstLevelIndex(requiredSize);//culprit?
 
-	std::cout << "fLIndex : " << fLIndex << std::endl;
+
 
 	if (m_firstLevelBitmap & (1ULL << fLIndex))// if there is atleast one subBin with a block
 	{

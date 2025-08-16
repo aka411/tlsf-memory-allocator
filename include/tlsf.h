@@ -132,7 +132,6 @@ class TlsfAllocator
 protected:
 
 
-	
 	friend TlsfAllocatorInternalTest; // for testing
 
 	const size_t BLOCK_HEADER_SIZE = sizeof(TlsfBlockHeader);
