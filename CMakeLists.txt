@@ -19,15 +19,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 enable_testing()
 
 
-add_library(tlsf-allocator SHARED 
+add_library(tlsf-allocator STATIC 
 
 src/tlsf.cpp
 
 )
-target_include_directories(tlsf-allocator PUBLIC 
+target_include_directories(tlsf-allocator PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 
 add_subdirectory(test)
-
