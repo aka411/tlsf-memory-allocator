@@ -160,5 +160,48 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 
 
+TEST_F(TlsfAllocatorTestPublic, DataIntegrityTest)
+{
 
+	TlsfAllocator* tlsfAllocator = getTlsfAllocator();
+
+	const size_t blockSize1 = 900;//in number of bytes
+	const size_t blockSize2 = 1500;//in number of bytes
+
+	void* dataBlockPtr1 = tlsfAllocator->allocate(blockSize1);
+
+	void* dataBlockPtr2 = tlsfAllocator->allocate(blockSize2);
+
+
+	const uint8_t pattern1 = 34;
+	const uint8_t pattern2 = 130;
+	
+	memset(dataBlockPtr1, pattern1, blockSize1);
+	memset(dataBlockPtr2, pattern2, blockSize2);
+
+
+	for (int i = 0; i <1000 ; ++i)
+	{
+		void* tempPtr1 = tlsfAllocator->allocate(i+50);
+		memset(tempPtr1, i, i + 50);
+		tlsfAllocator->deallocate(tempPtr1);
+	}
+
+
+
+	for (size_t i = 0; i < blockSize1; ++i)
+	{
+		ASSERT_EQ(((uint8_t*)dataBlockPtr1)[i], pattern1);
+	}
+
+	for (size_t i = 0; i < blockSize2; ++i)
+	{
+		ASSERT_EQ(((uint8_t*)dataBlockPtr2)[i], pattern2);
+	}
+
+	// Clean up: Deallocate the original blocks.
+	tlsfAllocator->deallocate(dataBlockPtr1);
+	tlsfAllocator->deallocate(dataBlockPtr2);
+
+}
 
