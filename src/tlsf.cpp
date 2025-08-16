@@ -547,7 +547,7 @@ TlsfBlockHeader* TlsfAllocator::coalesceBlocks(TlsfBlockHeader* currHeader)
 TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 {
 	
-	const size_t fLIndex = getFirstLevelIndex(requiredSize);//culprit?
+	const size_t fLIndex = getFirstLevelIndex(requiredSize);
 
 
 
@@ -792,7 +792,7 @@ void* TlsfAllocator::allocate(size_t size)
 		//split 
 		TlsfBlockHeader* userBlock = createTlsfBlock(bestFitLayout.rawStartAddress, bestFitLayout.rawExclusiveEndAddress);
 		
-		TlsfBlockHeader* remainingBlock = createTlsfBlock( bestFitLayout.rawExclusiveEndAddress, rawEndAddress);//culprit
+		TlsfBlockHeader* remainingBlock = createTlsfBlock( bestFitLayout.rawExclusiveEndAddress, rawEndAddress);
 	
 		if (userBlock == nullptr) return nullptr; // allocation failed !!
 
