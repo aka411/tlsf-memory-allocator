@@ -37,7 +37,6 @@ public:
 
 
 
-
 };
 
 
@@ -119,7 +118,7 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 
 
-	size_t si = 0;
+
 
 	// Phase 1: Allocate varying-sized blocks
 	for (size_t i = 0; i < 100; ++i)
@@ -129,12 +128,12 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 		// Print the iteration and size before the allocation attempt
 		std::cout << "Attempting to allocate " << varyingSize << " bytes on iteration " << i << std::endl;
-		si += varyingSize;
+		
 		void* ptr = tlsfAllocator->allocate(varyingSize);
 		if (ptr == nullptr)
 		{
 			FAIL() << "Failed to allocate block of size " << varyingSize
-				<< " on iteration " << i << "."<< si;
+				<< " on iteration " << i << ".";
 		}
 		allocatedPointers.push_back(ptr);
 	}
@@ -154,7 +153,6 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 		tlsfAllocator->deallocate(largePtr);
 	}
 }
-
 
 
 

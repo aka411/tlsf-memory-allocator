@@ -20,7 +20,7 @@ protected:
 	void SetUp() override
 	{
 
-		tlsfAllocatorInstance = new TlsfAllocator(ALLOCATION_SIZE);//30 KB
+		tlsfAllocatorInstance = new TlsfAllocator(ALLOCATION_SIZE);//5 KB
 
 		HEADER_SIZE = tlsfAllocatorInstance->BLOCK_HEADER_SIZE;
 		HEADER_ALIGNMENT = tlsfAllocatorInstance->ALIGNMENT_REQ_BLOCK_HEADER;
@@ -65,6 +65,9 @@ public:
 	}
 
 
+
+
+
 };
 
 
@@ -103,6 +106,5 @@ TEST_F(TlsfAllocatorInternalTest, LayoutCalculation)
 
 
 }
-
 
 
