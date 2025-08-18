@@ -13,12 +13,12 @@ The Tlsf allocator organizes memory into a pool and manages it using a system of
 The entire memory pool is defined by special blocks at the beginning and end, which are not allocatable. These act as **sentinel blocks** or **boundary markers** for the allocator.
 
 
-![Start-of-pool marker](diagrams\start-marker.png)
+![Start-of-pool marker](diagrams/start-marker.png)
 
 *The diagram above shows the structure of the start-of-pool marker.*
 
 
-![End-of-pool marker](diagrams\end-marker.png)
+![End-of-pool marker](diagrams/end-marker.png)
 
 *The diagram above shows the structure of the end-of-pool marker.*
 
@@ -26,7 +26,7 @@ The entire memory pool is defined by special blocks at the beginning and end, wh
 
 When memory is requested, the allocator finds or creates a block of the required size. This block is what the user receives a pointer to. A typical allocated block has the following structure:
 
-![Typical Allocatable Block](diagrams\typical-allocatble-block.png)
+![Typical Allocatable Block](diagrams/typical-allocatble-block.png)
 
 * **Tlsf Header & Footer:** These contain critical metadata about the block, such as its size and state (allocated or free).
 * **User Area:** This is the actual memory that the user's application can use.
@@ -35,16 +35,7 @@ When memory is requested, the allocator finds or creates a block of the required
 ## Key Features
 
 * **Fast Allocation:** The two-level segregated list structure allows for quick searching of free blocks.
-* **Minimal Fragmentation:** Adjacent free blocks are automatically coalesced (merged) to reduce external fragmentation.
-* **Overhead:** The overhead for each block is minimal, consisting only of the header and footer metadata.
-
-
-## Key Features
-
-
 * **Hierarchical Free Lists:** Uses a two-level bitmap and a 2D array of pointers to quickly locate free blocks based on their size.
-
-* **Block Coalescing:** Coalesces adjacent free memory blocks by merging them into a single, larger block. This is a critical feature that helps prevent external fragmentation over time.
-
+* **Minimal Fragmentation:** Adjacent free blocks are automatically coalesced (merged) to reduce external fragmentation.
 * **Custom Memory Management:** Handles memory blocks with custom headers and footers to manage block metadata, including size and status.
 
