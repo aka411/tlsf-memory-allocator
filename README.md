@@ -26,7 +26,7 @@ The entire memory pool is defined by special blocks at the beginning and end, wh
 
 When memory is requested, the allocator finds or creates a block of the required size. This block is what the user receives a pointer to. A typical allocated block has the following structure:
 
-![Typical Allocatable Block](diagrams/typical-allocatble-block.png)
+![Typical Allocatable Block](diagrams/typical-allocatable-block.png)
 
 * **Tlsf Header & Footer:** These contain critical metadata about the block, such as its size and state (allocated or free).
 * **User Area:** This is the actual memory that the user's application can use.
