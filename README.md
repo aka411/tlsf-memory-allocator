@@ -32,6 +32,12 @@ When memory is requested, the allocator finds or creates a block of the required
 * **User Area:** This is the actual memory that the user's application can use.
 * **Padding:** Padding is often added to ensure that the header, footer, and user area are correctly aligned in memory. This is crucial for performance and preventing issues on certain architectures.
 
+
+
+![Bitmaps for fast lookup](diagrams/bitmaps.png)
+
+![bins containing the allocatable block](diagrams/bins.png)
+
 ## Key Features
 
 * **Fast Allocation:** The two-level segregated list structure allows for quick searching of free blocks.
