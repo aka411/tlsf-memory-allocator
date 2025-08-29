@@ -27,46 +27,60 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 
 
-size_t TlsfAllocator::getFirstLevelIndex(size_t size) const
+
+
+TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 {
+	TwoLevelIndex index;
 
-	//Windows/MSVC:
+	if(size == 0)
+	{
+		return index; // return {0, 0} 
+	}
 
-//_BitScanForward()
-
-
-//GCC:
-
-//__builtin_ffs()
+#if defined( __GNUC__) ||  defined(__clang__)
 
 
-	size_t potentialFirstBitSetIndex = (sizeof(size) * 8) - 1;//8 bits * number of bytes ,since zero based index we minus 1
+	index.firstLevelIndex = (sizeof(size_t)*8) - __builtin_clzg(size)-1;
+
+
+
+#elif defined( __MSC_VER)
+	index.firstLevelIndex = _BitScanForward(size)-1;
+#else
+	
+
+	//fallback to manual search
+	size_t potentialFirstBitSetIndex = (sizeof(size) * 8) - 1;
 
 
 	while (true)
 	{
-		if (size & (1ULL << potentialFirstBitSetIndex)) return potentialFirstBitSetIndex;
+		if (size & (1ULL << potentialFirstBitSetIndex)) 
+		{ 
+			
+			
+			break;
+		}
 
 		if (potentialFirstBitSetIndex == 0) break;
 
 		--potentialFirstBitSetIndex;
 
-		
+
 	}
+	index.firstLevelIndex = potentialFirstBitSetIndex;
+#endif
 
 
 
-	return 0;
-}
-
-size_t TlsfAllocator::getSecondLevelIndex(size_t size) const
-{
-	const size_t flI = getFirstLevelIndex(size);
-	
-	
 
 
-	const size_t firstLevelBinRangeSize = (1ULL << flI);
+
+
+
+
+	const size_t firstLevelBinRangeSize = (1ULL << index.firstLevelIndex);
 
 	const size_t subBinIntervalSize = firstLevelBinRangeSize / m_subBinCount;
 
@@ -75,8 +89,17 @@ size_t TlsfAllocator::getSecondLevelIndex(size_t size) const
 	const size_t subBinIndex = (size - firstLevelBinRangeSize) / subBinIntervalSize;
 
 
-	return subBinIndex;
+	index.secondLevelIndex = subBinIndex;
+
+
+
+	return index;
+
 }
+
+
+
+
 
 
 
@@ -171,11 +194,12 @@ void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
 
 
 
+	const TwoLevelIndex twoLevelIndex = getTwoLevelIndex(header->UserAreaSize);
 
-	size_t firstLevelIndex = getFirstLevelIndex(header->UserAreaSize);
-	size_t secondLevelIndex = getSecondLevelIndex(header->UserAreaSize);
+	const size_t firstLevelIndex = twoLevelIndex.firstLevelIndex;
+	const size_t secondLevelIndex = twoLevelIndex.secondLevelIndex;
 
-	//ToDo : check inavlid index
+	
 
 
 
@@ -237,6 +261,12 @@ void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* currHeader)
 	TlsfBlockHeader* nextHeader = currHeader->nextFreeBlock;
 	TlsfBlockHeader* prevHeader = currHeader->prevFreeBlock;
 
+	const TwoLevelIndex twoLevelIndex = getTwoLevelIndex(currHeader->UserAreaSize);
+
+	const size_t firstLevelIndex = twoLevelIndex.firstLevelIndex;
+	const size_t secondLevelIndex = twoLevelIndex.secondLevelIndex;
+
+
 	if (  prevHeader != nullptr && nextHeader != nullptr ) // Case 1: Both next and previous headers exist in the sub-bin
 	{
 		prevHeader->nextFreeBlock = nextHeader;
@@ -247,9 +277,8 @@ void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* currHeader)
 	else if (prevHeader == nullptr && nextHeader != nullptr) // case 2: Only next header exsits and currHeader is the first in the second level sub-bin
 	{
 		
+		 
 
-		size_t firstLevelIndex = getFirstLevelIndex(currHeader->UserAreaSize);
-		size_t secondLevelIndex = getSecondLevelIndex(currHeader->UserAreaSize);
 
 		m_freeList[firstLevelIndex][secondLevelIndex] = nextHeader; // Update the free list to point to the next header
 
@@ -261,9 +290,6 @@ void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* currHeader)
 	{
 
 
-
-		size_t firstLevelIndex = getFirstLevelIndex(currHeader->UserAreaSize);
-		size_t secondLevelIndex = getSecondLevelIndex(currHeader->UserAreaSize);
 
 		//set Second Level sub-bin to nullptr and second level bitmap to 0
 
@@ -546,8 +572,12 @@ TlsfBlockHeader* TlsfAllocator::coalesceBlocks(TlsfBlockHeader* currHeader)
 
 TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 {
+
+	//ToDo : refactor this function correctly
 	
-	const size_t fLIndex = getFirstLevelIndex(requiredSize);
+
+	const TwoLevelIndex twoLevelIndex = getTwoLevelIndex(requiredSize);
+	const size_t fLIndex = twoLevelIndex.firstLevelIndex;
 
 
 
@@ -555,7 +585,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	{
 		const auto& secondLevelBitMap = m_secondLevelBitmap[fLIndex];
 
-		 size_t sLI = getSecondLevelIndex(requiredSize);
+		 size_t sLI = twoLevelIndex.secondLevelIndex;
 		
 		while (true)
 		{

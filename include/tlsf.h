@@ -1,6 +1,19 @@
 #pragma once
 #include <cstdint>
 
+
+
+
+
+struct TwoLevelIndex
+{
+	size_t firstLevelIndex = 0;
+	size_t secondLevelIndex = 0;
+};
+
+
+
+
 struct TlsfBlockHeader
 {
 
@@ -169,8 +182,7 @@ protected:
 
 	bool checkIfSecondLevelEmpty(size_t firstLevelIndex) const;
 
-	size_t getFirstLevelIndex(size_t size) const;
-	size_t getSecondLevelIndex(size_t size) const;
+	TwoLevelIndex getTwoLevelIndex(size_t size) const;
 
 
 
