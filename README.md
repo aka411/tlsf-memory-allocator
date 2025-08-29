@@ -1,12 +1,10 @@
 # Two-Level Segregated Fit Memory Allocator(TLSF)
-This project is a custom Two-Level Segregated Fit (TLSF) memory allocator implementation written in C++. TLSF is a high-performance dynamic memory allocator designed for environments where low-latency and deterministic performance are critical, such as embedded systems and real-time applications.
-
-The allocator manages a pre-allocated memory pool and organizes free memory blocks using a two-level hierarchy of free lists. The core logic for segregating, coalescing, and managing memory is implemented to ensure high efficiency.
+This repository contains a high-performance, custom-built Two-Level Segregated Fit (TLSF) memory allocator implementation written in C++. The TLSF algorithm is optimized for low-latency, deterministic memory management, making it ideal for real-time and embedded systems.
 
 
 ## Design Overview
 
-The Tlsf allocator organizes memory into a pool and manages it using a system of blocks. Each block contains metadata (headers and footers) to track its size and status.
+The TLSF allocator manages a pre-allocated memory pool, organizing it into a series of blocks. Each block is prefixed with a header and suffixed with a footer to store metadata such as size and allocation status. The memory pool itself is bounded by unallocatable sentinel blocks at the beginning and end, which act as boundary markers.
 
 ### **1. The Memory Pool Structure**
 
@@ -36,11 +34,11 @@ When memory is requested, the allocator finds or creates a block of the required
 
 ### **3. The O(1) Lookup System**
 
-The TLSF allocator's speed comes from its two-level bitmap system.
+The core of the TLSF allocator's speed is its O(1) lookup system, which relies on a two-level hierarchy of bitmaps and free lists. The system is based on the find-first-set (FFS) operation, which efficiently locates the first set bit in a bitmask.
 
-- **First-Level (FL) Bitmap:** A bit is set if there is at least one free block in the corresponding size class.
+- **First-Level (FL) Bitmap:** A bit is set if at least one free block exists in the corresponding size class.
 
-- **Second-Level (SL) Bitmap:** For each first-level group, a second bitmap tracks free blocks in finer-grained subclasses.
+- **Second-Level (SL) Bitmap:** For each first-level group, a second bitmap tracks free blocks in more granular subclasses.
 
 By using a find-first-set (FFS) operation on these bitmaps, the allocator can locate the appropriate free list in constant time, allowing for extremely fast allocation and deallocation.
 
