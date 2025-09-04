@@ -16,7 +16,7 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 	if(indexSet == 0)
 	{
-		return true;
+		return true; 
 	}
 
 	return false;
@@ -37,14 +37,14 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 
 size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
-	{
+{
 	//returns 1 based index of least significant set bit
 	//if no bits are set returns 0
 
 	if (bitmap == 0)
-		{
+	{
 		return 0; 
-		}
+	}
 
 	size_t  setIndex = 0;
 #if defined( __GNUC__) ||  defined(__clang__)
@@ -63,8 +63,8 @@ size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 		{
 			setIndex = i+1;
 			break;
+		}
 	}
-}
 
 
 
@@ -125,7 +125,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 
 
-
+	
 
 
 
@@ -716,53 +716,16 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	TlsfBlockHeader* header = m_freeList[newTwoLevelIndex.firstLevelIndex][newTwoLevelIndex.secondLevelIndex];
 
 	if(header == nullptr)
-			{
+	{
 		return nullptr; // no free block found
 	}
-				
-						removeFromFreeList(header);
-			
-			}
-			++sLI;
-			if (sLI >= sizeof(secondLevelBitMap) * 8) break;
 
-		}
-	}
+	removeFromFreeList(header);
+
+	return header;
 
 
-
-	//if excecution reaches here it means there is no blocks required size or greater in fLI so go to next.
-
-	size_t newFLIndex = fLIndex ;
-	while (true)
-	{
-		newFLIndex++;
-		if (newFLIndex >= sizeof(m_firstLevelBitmap) * 8) break;
-
-		if (m_firstLevelBitmap & (1ULL << newFLIndex))
-		{
-			const auto& secondLevelBitMap = m_secondLevelBitmap[newFLIndex];
-			size_t sLI = 0;
-			while (true)
-			{
-				
-				if (secondLevelBitMap & 1ULL << sLI)
-				{
-					//get the block from that sli
-					//remove from freelist
 	
-					TlsfBlockHeader* header = m_freeList[newFLIndex][sLI];
-					
-
-					while (header != nullptr)
-					{
-						if (header->UserAreaSize >= requiredSize)
-						{
-							removeFromFreeList(header);
-							return header;
-
-
-
 
 
 
