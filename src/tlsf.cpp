@@ -7,7 +7,14 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 {
 	//or i could just check the bitset
 
-	if (firstLevelIndex >= sizeof(m_firstLevelBitmap)*8) //bits
+	if (firstLevelIndex >= sizeof(m_firstLevelBitmap) * 8) //bits
+	{
+		return true;//returning true because index is out of bounds
+	}
+
+	const size_t indexSet = getLeastSetBitIndex(m_secondLevelBitmap[firstLevelIndex]);// 1 based index , zero indicates no bits set
+
+	if(indexSet == 0)
 	{
 		return true;
 	}
@@ -31,15 +38,42 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 	{
-		if (m_freeList[firstLevelIndex][subBinIndex] != nullptr)
+	//returns 1 based index of least significant set bit
+	//if no bits are set returns 0
+
+	if (bitmap == 0)
 		{
-			return false; 
+		return 0; 
 		}
+
+	size_t  setIndex = 0;
+#if defined( __GNUC__) ||  defined(__clang__)
+	
+	setIndex = __builtin_ffs(bitmap);
+
+#elif defined( __MSC_VER)
+
+	setIndex = _BitScanReverse(bitmap);
+#else
+	//fallback to manual search
+	setIndex = 0;
+	for(size_t i = 0; i < sizeof(bitmap) * 8; ++i)
+	{
+		if (bitmap & (1ULL << i))
+		{
+			setIndex = i+1;
+			break;
 	}
 }
 
 
 
+#endif
+
+
+
+	return setIndex;
+}
 
 
 
@@ -115,7 +149,89 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 
 
+TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 
+{
+	TwoLevelIndex twoLevelIndex = getTwoLevelIndex(size);
+
+
+	
+
+
+
+
+		if (m_firstLevelBitmap & (1ULL << twoLevelIndex.firstLevelIndex))
+		{
+
+			if (m_secondLevelBitmap[twoLevelIndex.firstLevelIndex] & (1ULL << twoLevelIndex.secondLevelIndex))
+			{
+				const size_t range = (1ULL << twoLevelIndex.firstLevelIndex) / m_subBinCount;
+
+				const size_t firstRange = range * twoLevelIndex.secondLevelIndex + (1ULL << twoLevelIndex.firstLevelIndex);//add
+				std::cout << " First Range: " << firstRange << " m_subBinCount : "<< m_subBinCount<<" twoLevelIndex.secondLevelIndex : "<< twoLevelIndex.secondLevelIndex<< "twoLevelIndex.firstLevelIndex :  " << twoLevelIndex.firstLevelIndex <<" size : " << size << std::endl;
+				if (firstRange >= size)
+				{
+					return twoLevelIndex;
+				}
+			}
+			else
+			{
+				//get next in second level if any
+
+				
+
+				const size_t secondLevelBitmap = m_secondLevelBitmap[twoLevelIndex.firstLevelIndex];
+				const size_t mask =  (2*(1ULL << twoLevelIndex.secondLevelIndex)) - 1;
+
+				const size_t remainingBitmap = secondLevelBitmap & ~mask;
+
+
+				
+
+				const size_t remainingIndex = getLeastSetBitIndex(remainingBitmap);
+				
+				if (remainingIndex != 0)
+				{
+					TwoLevelIndex newTwoLevelIndex;
+					newTwoLevelIndex.firstLevelIndex = twoLevelIndex.firstLevelIndex;
+					newTwoLevelIndex.secondLevelIndex = remainingIndex-1;
+					return newTwoLevelIndex;
+				}
+
+
+			}
+		}
+
+
+
+
+		const size_t firstLevelBitmap = m_firstLevelBitmap;
+
+		const size_t mask = (2 * (1ULL << twoLevelIndex.firstLevelIndex)) - 1;
+
+		const size_t remainingFirstBitmap = firstLevelBitmap & ~mask;
+
+		
+
+
+		 size_t remainingFirstIndex = getLeastSetBitIndex(remainingFirstBitmap);//dont forget its 1 based index, so 0 means no bits set
+		
+		if(remainingFirstIndex == 0)
+		{
+			return TwoLevelIndex{ 0,0 }; // no free block found
+		}
+
+		--remainingFirstIndex; //convert to 0 based index
+
+		//should  be atleast 1 cause we checked first level bitmap so subtraction of 1 from it will 0 or more and not negative
+		//-1 to convert to 0 based index
+		const size_t newSecondLevelIndex = getLeastSetBitIndex(m_secondLevelBitmap[remainingFirstIndex])-1;
+		
+		
+
+		return TwoLevelIndex{ remainingFirstIndex,newSecondLevelIndex  };
+
+}
 
 
 
