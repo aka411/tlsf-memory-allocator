@@ -12,15 +12,30 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 		return true;
 	}
 
-	// Check if any second level sub-bin is non-empty
-	for (size_t subBinIndex = 0; subBinIndex < sizeof(m_secondLevelBitmap[firstLevelIndex]) * 8; ++subBinIndex)//bits
+	return false;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 	{
 		if (m_freeList[firstLevelIndex][subBinIndex] != nullptr)
 		{
 			return false; 
 		}
 	}
-	return true; 
 }
 
 
@@ -580,35 +595,16 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	const size_t fLIndex = twoLevelIndex.firstLevelIndex;
 
 
+	TwoLevelIndex newTwoLevelIndex = getTwoLevelIndexWithFreeBlock(requiredSize);
 
-	if (m_firstLevelBitmap & (1ULL << fLIndex))// if there is atleast one subBin with a block
-	{
-		const auto& secondLevelBitMap = m_secondLevelBitmap[fLIndex];
+	TlsfBlockHeader* header = m_freeList[newTwoLevelIndex.firstLevelIndex][newTwoLevelIndex.secondLevelIndex];
 
-		 size_t sLI = twoLevelIndex.secondLevelIndex;
-		
-		while (true)
-		{
-			if (secondLevelBitMap & 1ULL << sLI)
+	if(header == nullptr)
 			{
-				//get the block from that sli
-				//remove from freelist
+		return nullptr; // no free block found
+	}
 				
-				//need to find the first fit 
-
-				TlsfBlockHeader* header = m_freeList[fLIndex][sLI];
-
-				while (header != nullptr)
-				{
-					if (header->UserAreaSize >= requiredSize)
-					{
 						removeFromFreeList(header);
-						return header;
-					}
-					header = header->nextFreeBlock;
-				}
-
-
 			
 			}
 			++sLI;
@@ -648,23 +644,10 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 						{
 							removeFromFreeList(header);
 							return header;
-						}
-						header = header->nextFreeBlock;
-					}
-				}
-				sLI++;
-				if (sLI >= sizeof(secondLevelBitMap) * 8) break;
-			}
-
-		}
-
-	}
 
 
 
-	//unfortunately the allocator failed to find a free block that satisfies the requirements
 
-	return nullptr;
 
 
 }
