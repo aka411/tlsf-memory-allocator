@@ -182,8 +182,11 @@ protected:
 
 	bool checkIfSecondLevelEmpty(size_t firstLevelIndex) const;
 
+	size_t getLeastSetBitIndex(size_t bitmap) const;
+
 	TwoLevelIndex getTwoLevelIndex(size_t size) const;
 
+	TwoLevelIndex getTwoLevelIndexWithFreeBlock(size_t size) const;
 
 
 
