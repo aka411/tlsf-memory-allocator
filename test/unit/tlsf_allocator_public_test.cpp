@@ -10,7 +10,7 @@ class TlsfAllocatorTestPublic : public ::testing::Test
 protected: 
 	TlsfAllocator* tlsfAllocatorInstance = nullptr;
 
-	const size_t ALLOCATION_SIZE = 1024 * 5; //5K KB
+	const size_t ALLOCATION_SIZE = 1024 * 1024; //1 MiB
 
 	void SetUp() override
 	{
