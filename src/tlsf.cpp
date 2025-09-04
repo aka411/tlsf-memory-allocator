@@ -1,7 +1,7 @@
 
 #include "tlsf.h"
 #include <cstdlib>
-#include <iostream>
+
 
 bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 {
@@ -168,7 +168,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 				const size_t range = (1ULL << twoLevelIndex.firstLevelIndex) / m_subBinCount;
 
 				const size_t firstRange = range * twoLevelIndex.secondLevelIndex + (1ULL << twoLevelIndex.firstLevelIndex);//add
-				std::cout << " First Range: " << firstRange << " m_subBinCount : "<< m_subBinCount<<" twoLevelIndex.secondLevelIndex : "<< twoLevelIndex.secondLevelIndex<< "twoLevelIndex.firstLevelIndex :  " << twoLevelIndex.firstLevelIndex <<" size : " << size << std::endl;
+				
 				if (firstRange >= size)
 				{
 					return twoLevelIndex;
