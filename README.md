@@ -89,7 +89,7 @@ The actual free blocks are stored in a 2D array of pointers. The indices derived
 ## Performance Metrics
 
 ## Prerequisites
-
+* CMake 
 
 ## Build Instructions
 Clone the repository:
