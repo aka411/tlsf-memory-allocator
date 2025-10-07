@@ -1,6 +1,25 @@
 # Two-Level Segregated Fit Memory Allocator(TLSF)
 This repository contains a high-performance, custom-built Two-Level Segregated Fit (TLSF) memory allocator implementation written in C++. The TLSF algorithm is optimized for low-latency, deterministic memory management, making it ideal for real-time and embedded systems.
 
+## 📚 Table of Contents
+
+1.  [Design Overview](#design-overview)
+2.  [The Memory Pool Structure](#1-the-memory-pool-structure)
+3.  [Typical Allocatable Block](#2-typical-allocatable-block)
+4.  [The O(1) Lookup System](#3-the-o1-lookup-system)
+    * [Bitmaps for O(1) Lookup](#bitmaps-for-o1-lookup)
+    * [Free List Array](#free-list-array)
+5.  [Core Operations](#core-operations)
+    * [Allocation](#allocation)
+    * [Deallocation](#deallocation)
+6.  [Key Features](#key-features)
+7.  [Performance Metrics](#performance-metrics)
+8.  [Prerequisites](#prerequisites)
+9.  [Build Instructions](#build-instructions)
+10. [Usage Example](#usage-example)
+11. [License](#license)
+12. [Acknowledgements](#acknowledgements)
+
 
 ## Design Overview
 
@@ -55,9 +74,10 @@ The actual free blocks are stored in a 2D array of pointers. The indices derived
 ![bins containing the allocatable block](diagrams/bins.png)
 
 ## Core Operations
-Allocation: When a memory request comes in, the allocator calculates the required FL and SL indices based on the requested size. It then uses the bitmaps to find the smallest available free block that can satisfy the request. The selected block is removed from its free list, marked as allocated, and potentially split if it's much larger than the requested size.
 
-Deallocation: When a block is freed, the allocator marks it as free and checks its adjacent blocks. If an adjacent block is also free, the allocator coalesces (merges) the two blocks into a single, larger free block. This process helps to combat external fragmentation, where memory is available but scattered in many small, unusable chunks. The newly coalesced block is then inserted back into the appropriate free list based on its new, larger size.
+* **Allocation :** When a memory request comes in, the allocator calculates the required FL and SL indices based on the requested size. It then uses the bitmaps to find the smallest available free block that can satisfy the request. The selected block is removed from its free list, marked as allocated, and potentially split if it's much larger than the requested size.
+
+* **Deallocation :** When a block is freed, the allocator marks it as free and checks its adjacent blocks. If an adjacent block is also free, the allocator coalesces (merges) the two blocks into a single, larger free block. This process helps to combat external fragmentation, where memory is available but scattered in many small, unusable chunks. The newly coalesced block is then inserted back into the appropriate free list based on its new, larger size.
 
 ## Key Features
 
