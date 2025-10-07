@@ -4,21 +4,21 @@ This repository contains a high-performance, custom-built Two-Level Segregated F
 ## 📚 Table of Contents
 
 1.  [Design Overview](#design-overview)
-2.  [The Memory Pool Structure](#1-the-memory-pool-structure)
-3.  [Typical Allocatable Block](#2-typical-allocatable-block)
-4.  [The O(1) Lookup System](#3-the-o1-lookup-system)
+*  [The Memory Pool Structure](#1-the-memory-pool-structure)
+*  [Typical Allocatable Block](#2-typical-allocatable-block)
+*  [The O(1) Lookup System](#3-the-o1-lookup-system)
     * [Bitmaps for O(1) Lookup](#bitmaps-for-o1-lookup)
     * [Free List Array](#free-list-array)
-5.  [Core Operations](#core-operations)
+2.  [Core Operations](#core-operations)
     * [Allocation](#allocation)
     * [Deallocation](#deallocation)
-6.  [Key Features](#key-features)
-7.  [Performance Metrics](#performance-metrics)
-8.  [Prerequisites](#prerequisites)
-9.  [Build Instructions](#build-instructions)
-10. [Usage Example](#usage-example)
-11. [License](#license)
-12. [Acknowledgements](#acknowledgements)
+3.  [Key Features](#key-features)
+4.  [Performance Metrics](#performance-metrics)
+5.  [Prerequisites](#prerequisites)
+6.  [Build Instructions](#build-instructions)
+7. [Usage Example](#usage-example)
+8. [License](#license)
+9. [Acknowledgements](#acknowledgements)
 
 
 ## Design Overview
