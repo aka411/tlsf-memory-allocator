@@ -111,8 +111,12 @@ The actual free blocks are maintained within doubly linked lists, and the head o
 As of now i have not quantified the performance of allocator and is a pending work.
 
 ## Prerequisites
-* CMake (Minimum version Required - 3.14)
-* 
+
+To build and run this project, you will need the following tools and dependencies installed on your system.
+
+* **Cmake:** The project uses Cmake as its meta build system **(Minimum Required Version : 3.14 )**.
+ 
+* **C++ Compiler:** A modern C++ compiler that supports  **C++ 17 Standard**.
 
 ## Build Instructions
 ### 🧪 Quick Validation: Build and Test
@@ -185,4 +189,7 @@ This project is licensed under the Apache-2.0 License - see the LICENSE file for
 
 ## Acknowledgements
 
-Thanks for these awesome resources that were used during the development
+Thanks for these awesome resources that were used during the development.
+* **[TLSF: a New Dynamic Memory Allocator for Real-Time Systems](http://www.gii.upv.es/tlsf/files/papers/ecrts04_tlsf.pdf):** This is the original research paper by M. Masmano; I. Ripoll; A. Crespo; J. Real that introduced the Two-Level Segregated Fit algorithm, providing the foundational concepts for O(1) constant-time memory management.
+
+* **[Two-Level Segregated Fit Memory Allocator (Rice Fields)](https://ricefields.me/2024/04/20/tlsf-allocator.html):** Provided a detailed explanation and implementation guidance on the two-level binning system, including the linear-log bucketing approach.
