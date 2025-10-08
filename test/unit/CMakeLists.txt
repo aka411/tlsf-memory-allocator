@@ -10,7 +10,7 @@ add_executable(tlsf-allocator-test
 
 
 target_link_libraries(tlsf-allocator-test PRIVATE
-	tlsf-allocator
+	tlsf::tlsf-allocator
     GTest::gtest_main
 )
 

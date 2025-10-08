@@ -10,7 +10,7 @@ class TlsfAllocatorTestPublic : public ::testing::Test
 protected: 
 	TlsfAllocator* tlsfAllocatorInstance = nullptr;
 
-	const size_t ALLOCATION_SIZE = 1024 * 5; //5K KB
+	const size_t ALLOCATION_SIZE = 1024 * 1024; //1 MiB
 
 	void SetUp() override
 	{
@@ -118,6 +118,13 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 
 
+	// Phase 0: Try to allocate a large block to see if before fragmentation test
+	void* largePtrPreFragmentation = tlsfAllocator->allocate(ALLOCATION_SIZE / 2);
+	ASSERT_NE(largePtrPreFragmentation, nullptr) << "Failed to allocate a large block of size "<< ALLOCATION_SIZE /(2*1024.0) <<" kB before fragmentation test.";
+	if (largePtrPreFragmentation)
+	{
+		tlsfAllocator->deallocate(largePtrPreFragmentation);
+	}
 
 
 	// Phase 1: Allocate varying-sized blocks
