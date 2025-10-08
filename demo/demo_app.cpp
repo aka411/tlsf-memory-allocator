@@ -18,10 +18,10 @@ int main()
 	else
 	{
 		std::cout << "Failed to allocat 20 bytes of memory" << std::endl;
-		return -1;
+	
 	}
 	std::cout << "Press Enter key to Exit" << std::endl;
 	std::cin.get();// wait for user to press enter to avoid exiting fast
 
-	return 1;
+	return 0;
 }
