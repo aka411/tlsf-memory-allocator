@@ -144,7 +144,7 @@ To quickly see the allocator's public API in action and verify its performance c
 1.  Ensure you have completed the **Build the Project** step above.
 2.  **Execute the Demo:** 
     ```bash
-    ./build/bin/demo_app
+    ./build/bin/demo-app
     ```
     *The demo will print performance metrics to the console.*
 
