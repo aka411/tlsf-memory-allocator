@@ -1,31 +1,33 @@
-# Two-Level Segregated Fit Memory Allocator(TLSF)
+# Two-Level Segregated Fit (TLSF) Memory Allocator
 This repository contains a high-performance, custom-built Two-Level Segregated Fit (TLSF) memory allocator implementation written in C++. The TLSF algorithm is optimized for low-latency, deterministic memory management, making it ideal for real-time and embedded systems.
 
 ## 📚 Table of Contents
 
-1.  [Design Overview](#design-overview)
-*  [The Memory Pool Structure](#1-the-memory-pool-structure)
-*  [Typical Allocatable Block](#2-typical-allocatable-block)
-*  [The O(1) Lookup System](#3-the-o1-lookup-system)
-    * [Bitmaps for O(1) Lookup](#bitmaps-for-o1-lookup)
-    * [Free List Array](#free-list-array)
-2.  [Core Operations](#core-operations)
+1. [Design Overview](#design-overview)
+    * [I. Memory Structures](#i-memory-structures)
+        * [The Memory Pool Structure](#1-the-memory-pool-structure)
+        * [Typical Allocatable Block](#2-typical-allocatable-block)
+    * [II. The O(1) Lookup System](#ii-the-o1-lookup-system)
+        * [Bitmaps for O(1) Lookup](#1-bitmaps-for-o1-lookup)
+        * [Free List Array](#2-free-list-array)
+2. [Core Operations](#core-operations)
     * [Allocation](#allocation)
     * [Deallocation](#deallocation)
-3.  [Key Features](#key-features)
-4.  [Performance Metrics](#performance-metrics)
-5.  [Prerequisites](#prerequisites)
-6.  [Build Instructions](#build-instructions)
+3. [Key Features](#key-features)
+4. [Performance Metrics](#performance-metrics)
+5. [Prerequisites](#prerequisites)
+6. [Build Instructions](#build-instructions)
 7. [Usage Example](#usage-example)
 8. [License](#license)
 9. [Acknowledgements](#acknowledgements)
-
-
 ## Design Overview
 
 The TLSF allocator manages a pre-allocated memory pool, organizing it into a series of blocks. Each block is prefixed with a header and suffixed with a footer to store metadata such as size and allocation status. The memory pool itself is bounded by unallocatable sentinel blocks at the beginning and end, which act as boundary markers.
 
-### **1. The Memory Pool Structure**
+
+### **I. Memory Structures**
+
+#### **1. The Memory Pool Structure**
 
 The entire memory pool is defined by special blocks at the beginning and end, which are not allocatable. These act as **sentinel blocks** or **boundary markers** for the allocator.
 
@@ -51,9 +53,13 @@ When memory is requested, the allocator finds or creates a block of the required
 
 ![Typical Allocatable Block](diagrams/typical-allocatable-block.png)
 
-### **3. The O(1) Lookup System**
+### **II. The O(1) Lookup System**
 
 The core of the TLSF allocator's speed is its O(1) lookup system, which relies on a two-level hierarchy of bitmaps and free lists. The system is based on the find-first-set (FFS) operation, which efficiently locates the first set bit in a bitmask.
+
+#### **1. Bitmaps for O(1) Lookup**
+
+To quickly find a free block of a suitable size, the TLSF allocator uses two bitmaps. The Bitmaps are at the core of the allocator's performance. The indices we get from them are used to get the allocatable free block in O(1) time.
 
 - **First-Level (FL) Bitmap:** A bit is set if at least one free block exists in the corresponding size class.
 
@@ -61,23 +67,38 @@ The core of the TLSF allocator's speed is its O(1) lookup system, which relies o
 
 By using a find-first-set (FFS) operation on these bitmaps, the allocator can locate the appropriate free list in constant time, allowing for extremely fast allocation and deallocation.
 
-#### **Bitmaps for O(1) Lookup**
-To quickly find a free block of a suitable size, the TLSF allocator uses two bitmaps. The Bitmaps are at the core of the allocator's performance. The indices we get from them are used to get the allocatable free block in O(1) time.
-
 ![Bitmaps for fast lookup](diagrams/bitmaps.png)
 
 
-#### **Free List Array**
+#### **2. Free List Array**
 
-The actual free blocks are stored in a 2D array of pointers. The indices derived from the FL and SL bitmaps are used to directly access the head of the correct free list. This direct lookup is what provides the fast O(1) constant-time performance, as the allocator doesn't need to traverse a linked list to find a suitable block.
+The actual free blocks are maintained within doubly linked lists, and the head of each list is stored in a 2D array of pointers. The indices derived from the FL and SL bitmaps are used to directly access the head of the correct free list. The indices (FL and SL) are calculated such that the free block at the head of the chosen doubly linked list is guaranteed to be equal to or greater than the required size, enabling a direct, **O(1) constant-time** block selection without the need to traverse the list.
 
 ![bins containing the allocatable block](diagrams/bins.png)
 
 ## Core Operations
 
-* **Allocation :** When a memory request comes in, the allocator calculates the required FL and SL indices based on the requested size. It then uses the bitmaps to find the smallest available free block that can satisfy the request. The selected block is removed from its free list, marked as allocated, and potentially split if it's much larger than the requested size.
+### **Allocation**
 
-* **Deallocation :** When a block is freed, the allocator marks it as free and checks its adjacent blocks. If an adjacent block is also free, the allocator coalesces (merges) the two blocks into a single, larger free block. This process helps to combat external fragmentation, where memory is available but scattered in many small, unusable chunks. The newly coalesced block is then inserted back into the appropriate free list based on its new, larger size.
+1. Calculate required (FL,SL) indices from the requested size.
+
+2. Use the bitmaps to find the smallest available free block.
+
+3. Remove the block from its free list.
+
+4. Mark it as allocated.
+
+5. Split the block if it's much larger than the request, returning the remainder to the free lists.
+
+### **Deallocation**
+  
+1. Mark the block as free.
+
+2. Check adjacent blocks for a free state.
+
+3. If an adjacent block is free, coalesce (merge) them into one larger free block to reduce external fragmentation.
+
+4. Insert the new, possibly larger, block into the appropriate free list based on its new size.
 
 ## Key Features
 
@@ -87,6 +108,7 @@ The actual free blocks are stored in a 2D array of pointers. The indices derived
 * **Custom Memory Management:** Handles memory blocks with custom headers and footers to manage block metadata, including size and status.
 
 ## Performance Metrics
+As of now i have not quantified the performance of allocator and is a pending work.
 
 ## Prerequisites
 * CMake 
