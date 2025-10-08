@@ -114,9 +114,8 @@ As of now i have not quantified the performance of allocator and is a pending wo
 
 To build and run this project, you will need the following tools and dependencies installed on your system.
 
-* **Cmake:** The project uses Cmake as its meta build system **(Minimum Required Version : 3.14 )**.
- 
-* **C++ Compiler:** A modern C++ compiler that supports  **C++ 17 Standard**.
+* **C++ Toolchain:** A modern C++ compiler supporting the **C++17** standard or newer (e.g., GCC, Clang, or MSVC).
+* **Build System:** [CMake](https://cmake.org/download/) (Minimum Required Version: **3.14**) is used as the meta-build system to generate native build files.
 
 ## Build Instructions
 ### 🧪 Quick Validation: Build and Test
