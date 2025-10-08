@@ -111,15 +111,71 @@ The actual free blocks are maintained within doubly linked lists, and the head o
 As of now i have not quantified the performance of allocator and is a pending work.
 
 ## Prerequisites
-* CMake 
+* CMake (Minimum version Required - 3.14)
+* 
 
 ## Build Instructions
-Clone the repository:
+### 🧪 Quick Validation: Build and Test
+
+To demonstrate the allocator's functionality and correctness, the entire test suite can be executed locally using CTest.
+
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/aka411/tlsf-memory-allocator.git
+    cd tlsf-memory-allocator
+    ```
+2.  **Build the Project:** (This compiles the allocator, the test executable, and the demo executable)
+    ```bash
+    cmake -B build
+    cmake --build build
+    ```
+3.  **Run All Tests:** (This executes the tests using CTest)
+    ```bash
+    cd build
+    ctest --verbose
+    ```
+    *All tests must pass for a successful validation.*
+
+
+### 🏃 Run the Live Demo
+
+To quickly see the allocator's public API in action and verify its performance claims (e.g., $\mathcal{O}(1)$ speed), run the compiled demo application.
+
+1.  Ensure you have completed the **Build the Project** step above.
+2.  **Execute the Demo:** 
+    ```bash
+    ./build/bin/demo_app
+    ```
+    *The demo will print performance metrics to the console.*
 
 
 ## Usage Example
-Here is a simple example demonstrating how to initialize the allocator and manage memory.
+Here is a simple example demonstrating how to initialize the allocator and use it.
+```
+#include "tlsf.h"
 
+int main()
+{
+
+TlsfAllocator tlsfAllocator(1024);// Get 1KB of memory for the pool
+
+void* ptr = tlsfAllocator.allocate(200); // get a pointer to block of size 200 bytes
+
+if(ptr != nullptr)
+{
+std::cout<< "Successfully allocated 200 bytes of memory"<<std::endl;
+}
+else
+{
+std::cout<< "Failed to allocat 200 bytes of memory"<<std::endl;
+return -1;
+}
+
+
+return 1;
+}
+
+```
 
 ## License
 This project is licensed under the Apache-2.0 License - see the LICENSE file for details.
