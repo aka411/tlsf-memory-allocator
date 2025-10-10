@@ -1,22 +1,30 @@
 
 #include "tlsf.h"
 #include <cstdlib>
+#ifdef   _MSC_VER
+#include <intrin0.inl.h>//compiler specific header
+#endif
+#include <cassert>
 
 
 bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 {
-	//or i could just check the bitset
+	
+	// To check if Second Level Bitmap of a particular First level is empty
+	//TODO : Write code just to check if its zero no need for calling getLeastSetBitIndex()
+
+
 
 	if (firstLevelIndex >= sizeof(m_firstLevelBitmap) * 8) //bits
 	{
 		return true;//returning true because index is out of bounds
 	}
 
-	const size_t indexSet = getLeastSetBitIndex(m_secondLevelBitmap[firstLevelIndex]);// 1 based index , zero indicates no bits set
+	const LeastSetBitIndexResult leastSetBitIndexResult = getLeastSetBitIndex(m_secondLevelBitmap[firstLevelIndex]);
 
-	if(indexSet == 0)
+	if(!leastSetBitIndexResult.found )
 	{
-		return true; 
+		return true;
 	}
 
 	return false;
@@ -36,24 +44,40 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 
 
-size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
+TlsfAllocator::LeastSetBitIndexResult TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 {
-	//returns 1 based index of least significant set bit
-	//if no bits are set returns 0
+	
+	
 
 	if (bitmap == 0)
 	{
-		return 0; 
+		return LeastSetBitIndexResult();
 	}
 
 	size_t  setIndex = 0;
-#if defined( __GNUC__) ||  defined(__clang__)
-	
-	setIndex = __builtin_ffs(bitmap);
 
-#elif defined( __MSC_VER)
 
-	setIndex = _BitScanReverse(bitmap);
+	//for getting the first LSB set
+#if defined( __GNUG__) ||  defined(__clang__)
+
+	//TODO:  need to review this , the conversions of types are a little sketchy but works for now
+	size_t oneBasedResult =  __builtin_ffs(bitmap);
+
+	if (oneBasedResult != 0)
+	{
+		return LeastSetBitIndexResult{ true,oneBasedResult - 1 };
+	}
+
+#elif defined( _MSC_VER)
+
+	//TODO:  need to review this , the conversions of types are a little sketchy but works for now
+	unsigned char result = _BitScanForward((unsigned long*)&setIndex, bitmap);
+
+	if(result)
+	{
+		return LeastSetBitIndexResult{ true,setIndex };
+	}
+
 #else
 	//fallback to manual search
 	setIndex = 0;
@@ -61,8 +85,9 @@ size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 	{
 		if (bitmap & (1ULL << i))
 		{
-			setIndex = i+1;
-			break;
+			setIndex = i;
+			return LeastSetBitIndexResult{ true,setIndex };
+			break;//should not execute
 		}
 	}
 
@@ -72,7 +97,7 @@ size_t TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
 
 
 
-	return setIndex;
+	return LeastSetBitIndexResult();//no bits set in bitmap
 }
 
 
@@ -84,20 +109,35 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 	if(size == 0)
 	{
-		return index; // return {0, 0} 
+		return index; // return {0, 0}
 	}
 
+
+	//for getting the first MSB set
 #if defined( __GNUC__) ||  defined(__clang__)
 
-
+	//TODO : review this also
 	index.firstLevelIndex = (sizeof(size_t)*8) - __builtin_clzg(size)-1;
-
-
-
-#elif defined( __MSC_VER)
-	index.firstLevelIndex = _BitScanForward(size)-1;
-#else
 	
+
+
+#elif defined( _MSC_VER)
+
+	size_t setIndex = 0;
+	unsigned char result = _BitScanReverse((unsigned long*)&setIndex,size);
+
+	if (result == 0)
+	{
+		//This should never happen as size is not zero casue we checked it 
+		//if this happens it means something went wrong in  _BitScanReverse() or this block of code only
+
+		//TODO : write code to handle this 
+		//assert(size == 0);
+	}
+
+	index.firstLevelIndex = setIndex;
+#else
+
 
 	//fallback to manual search
 	size_t potentialFirstBitSetIndex = (sizeof(size) * 8) - 1;
@@ -105,10 +145,10 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 	while (true)
 	{
-		if (size & (1ULL << potentialFirstBitSetIndex)) 
-		{ 
-			
-			
+		if (size & (1ULL << potentialFirstBitSetIndex))
+		{
+
+
 			break;
 		}
 
@@ -125,7 +165,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 
 
-	
+
 
 
 
@@ -155,7 +195,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 	TwoLevelIndex twoLevelIndex = getTwoLevelIndex(size);
 
 
-	
+
 
 
 
@@ -168,7 +208,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 				const size_t range = (1ULL << twoLevelIndex.firstLevelIndex) / m_subBinCount;
 
 				const size_t firstRange = range * twoLevelIndex.secondLevelIndex + (1ULL << twoLevelIndex.firstLevelIndex);//add
-				
+
 				if (firstRange >= size)
 				{
 					return twoLevelIndex;
@@ -178,7 +218,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 			{
 				//get next in second level if any
 
-				
+
 
 				const size_t secondLevelBitmap = m_secondLevelBitmap[twoLevelIndex.firstLevelIndex];
 				const size_t mask =  (2*(1ULL << twoLevelIndex.secondLevelIndex)) - 1;
@@ -186,15 +226,18 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 				const size_t remainingBitmap = secondLevelBitmap & ~mask;
 
 
-				
 
-				const size_t remainingIndex = getLeastSetBitIndex(remainingBitmap);
-				
-				if (remainingIndex != 0)
+
+				const LeastSetBitIndexResult leastSetBitIndexResult = getLeastSetBitIndex(remainingBitmap);
+
+
+
+
+				if (leastSetBitIndexResult.found )
 				{
 					TwoLevelIndex newTwoLevelIndex;
 					newTwoLevelIndex.firstLevelIndex = twoLevelIndex.firstLevelIndex;
-					newTwoLevelIndex.secondLevelIndex = remainingIndex-1;
+					newTwoLevelIndex.secondLevelIndex = leastSetBitIndexResult.index;
 					return newTwoLevelIndex;
 				}
 
@@ -211,25 +254,25 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
 
 		const size_t remainingFirstBitmap = firstLevelBitmap & ~mask;
 
-		
 
 
-		 size_t remainingFirstIndex = getLeastSetBitIndex(remainingFirstBitmap);//dont forget its 1 based index, so 0 means no bits set
-		
-		if(remainingFirstIndex == 0)
+
+		const LeastSetBitIndexResult leastSetBitIndexResult = getLeastSetBitIndex(remainingFirstBitmap);
+
+		if(!leastSetBitIndexResult.found)
 		{
 			return TwoLevelIndex{ 0,0 }; // no free block found
 		}
 
-		--remainingFirstIndex; //convert to 0 based index
+		const size_t remainingFirstIndex = leastSetBitIndexResult.index;
 
-		//should  be atleast 1 cause we checked first level bitmap so subtraction of 1 from it will 0 or more and not negative
-		//-1 to convert to 0 based index
-		const size_t newSecondLevelIndex = getLeastSetBitIndex(m_secondLevelBitmap[remainingFirstIndex])-1;
-		
-		
 
-		return TwoLevelIndex{ remainingFirstIndex,newSecondLevelIndex  };
+		LeastSetBitIndexResult leastSetBitNewSecondLevelIndexResult = getLeastSetBitIndex(m_secondLevelBitmap[remainingFirstIndex]);
+		//we dont check found cause it is already established it exsists casue first level is set
+		//but for safety we will add it later
+		assert(leastSetBitNewSecondLevelIndexResult.found);
+
+		return TwoLevelIndex{ remainingFirstIndex,leastSetBitNewSecondLevelIndexResult.index };
 
 }
 
@@ -280,7 +323,7 @@ TlsfBlockHeader* TlsfAllocator::createTlsfBlock(const size_t rawStartAddress, co
 
 	const size_t userAreaStartAddress = headerStartAddress + BLOCK_HEADER_SIZE;
 
-	
+
 	const size_t footerStartAddress = rawEndAddress - FOOTER_SIZE;
 
 	if (footerStartAddress % ALIGNMENT_REQ_FOOTER)
@@ -292,7 +335,7 @@ TlsfBlockHeader* TlsfAllocator::createTlsfBlock(const size_t rawStartAddress, co
 	const size_t userAreaEndAddress = footerStartAddress; // no footer padding ,so they overlap
 
 
-	
+
 	const size_t userAreaSize = userAreaEndAddress - userAreaStartAddress;
 
 
@@ -320,7 +363,7 @@ void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
 {
 	if (header == nullptr)
 	{
-		return; 
+		return;
 	}
 
 
@@ -330,14 +373,14 @@ void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
 	const size_t firstLevelIndex = twoLevelIndex.firstLevelIndex;
 	const size_t secondLevelIndex = twoLevelIndex.secondLevelIndex;
 
-	
+
 
 
 
 	header->isFree = true;
-	
 
-	
+
+
 	if (m_freeList[firstLevelIndex][secondLevelIndex] == nullptr) // If the sub-bin is empty
 	{
 
@@ -350,18 +393,18 @@ void TlsfAllocator::storeInFreeList(TlsfBlockHeader* header)
 		header->nextFreeBlock = nullptr; // No next block
 		header->prevFreeBlock = nullptr; // No previous block
 
-	
+
 		m_secondLevelBitmap[firstLevelIndex] |= (1ULL << secondLevelIndex); // Set the second level bitmap for this size
 
-		
-		
+
+
 		m_firstLevelBitmap |= (1ULL << firstLevelIndex);
-		
+
 	}
 	else // If the sub-bin is not empty
 	{
 
-		//Case 2: Sub-bin is not empty ,add this block to first in sub-bin and update the next and previous pointers 
+		//Case 2: Sub-bin is not empty ,add this block to first in sub-bin and update the next and previous pointers
 
 		TlsfBlockHeader* firstHeader = m_freeList[firstLevelIndex][secondLevelIndex];
 		header->nextFreeBlock = firstHeader; // Set the new header as the first block in the sub-bin
@@ -407,8 +450,8 @@ void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* currHeader)
 	}
 	else if (prevHeader == nullptr && nextHeader != nullptr) // case 2: Only next header exsits and currHeader is the first in the second level sub-bin
 	{
-		
-		 
+
+
 
 
 		m_freeList[firstLevelIndex][secondLevelIndex] = nextHeader; // Update the free list to point to the next header
@@ -436,8 +479,8 @@ void TlsfAllocator::removeFromFreeList(TlsfBlockHeader* currHeader)
 	}
 
 	//common for all conditions
-	currHeader->nextFreeBlock = nullptr; 
-	currHeader->prevFreeBlock = nullptr; 
+	currHeader->nextFreeBlock = nullptr;
+	currHeader->prevFreeBlock = nullptr;
 	currHeader->isFree = false;
 
 
@@ -455,7 +498,7 @@ TlsfBlock TlsfAllocator::getNextTlsfBlock(TlsfBlockHeader* header) const
 
 	if (header == nullptr)
 	{
-		return nextTlsfBlock; 
+		return nextTlsfBlock;
 	}
 
 	const size_t nextBlockRawAddress = (reinterpret_cast<size_t>(header) - (header->rawOffset)) + header->rawBlockSize;
@@ -480,7 +523,7 @@ TlsfBlock TlsfAllocator::getPreviousTlsfBlock(TlsfBlockHeader* header) const
 	TlsfBlock prevTlsfBlock;
 	if (header == nullptr)
 	{
-		return prevTlsfBlock; 
+		return prevTlsfBlock;
 	}
 
 	const size_t blockRawAddress = reinterpret_cast<size_t>(header) - header->rawOffset;
@@ -516,7 +559,7 @@ bool TlsfAllocator::checkForwardMerge(TlsfBlockHeader* header) const
 {
 	if (header == nullptr)
 	{
-		return false; 
+		return false;
 	}
 
 
@@ -539,7 +582,7 @@ bool TlsfAllocator::checkBackwardMerge(TlsfBlockHeader* header) const
 {
 	if (header == nullptr)
 	{
-		return false; 
+		return false;
 	}
 
 	TlsfBlock prevTlsfBlock = getPreviousTlsfBlock(header);
@@ -547,7 +590,7 @@ bool TlsfAllocator::checkBackwardMerge(TlsfBlockHeader* header) const
 
 	if (prevHeader->isFree)
 	{
-		
+
 		return true;
 	}
 
@@ -610,10 +653,10 @@ TlsfBlockHeader* TlsfAllocator::mergeForward(TlsfBlockHeader* currHeader)
 	newHeader->nextFreeBlock = nullptr; // i still need to hash out who is responsible for setting this
 	newHeader->prevFreeBlock = nullptr;
 
-	newHeader->isFree = true; 
+	newHeader->isFree = true;
 
 
-	newFooter->rawBlocksize = newRawBlockSize; 
+	newFooter->rawBlocksize = newRawBlockSize;
 
 	return newHeader; // Return the new merged header
 }
@@ -634,7 +677,7 @@ TlsfBlockHeader* TlsfAllocator::mergeBackward(TlsfBlockHeader* currHeader)
 
 	if (prevHeader == nullptr)
 	{
-		return nullptr; 
+		return nullptr;
 	}
 
 
@@ -642,8 +685,8 @@ TlsfBlockHeader* TlsfAllocator::mergeBackward(TlsfBlockHeader* currHeader)
 	//Need more thought here
 	if (!prevHeader->isFree)
 	{
-		
-		return nullptr; 
+
+		return nullptr;
 	}
 
 
@@ -663,16 +706,16 @@ TlsfBlockHeader* TlsfAllocator::mergeBackward(TlsfBlockHeader* currHeader)
 	newHeader->UserAreaSize = newUserAreaSize;
 
 	newHeader->nextFreeBlock = nullptr; // i still need to hash out who is responsible for setting this
-	newHeader->prevFreeBlock = nullptr; 
+	newHeader->prevFreeBlock = nullptr;
 
-	newHeader->isFree = true; 
-	newFooter->rawBlocksize = newRawBlockSize; 
+	newHeader->isFree = true;
+	newFooter->rawBlocksize = newRawBlockSize;
 
 	return newHeader; // Return the new merged header
 }
 
 TlsfBlockHeader* TlsfAllocator::coalesceBlocks(TlsfBlockHeader* currHeader)
-{ 
+{
 
 	//check for nullptr
 	if (currHeader == nullptr)
@@ -705,7 +748,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 {
 
 	//ToDo : refactor this function correctly
-	
+
 
 	const TwoLevelIndex twoLevelIndex = getTwoLevelIndex(requiredSize);
 	const size_t fLIndex = twoLevelIndex.firstLevelIndex;
@@ -725,7 +768,7 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 	return header;
 
 
-	
+
 
 
 
@@ -738,18 +781,18 @@ TlsfBlockHeader* TlsfAllocator::getFreeBlock(const size_t requiredSize)
 TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 {
 	//for our first iteration we will use malloc
-	
+
 	void* ptr = reinterpret_cast<void*>(malloc(memoryPoolSize));
 
-	if (ptr == nullptr) return; // not pretty 
+	if (ptr == nullptr) return; // not pretty
 
 
 	//construct start block
-	
+
 
 	const Layout startBlockLayout = calculateLayout(reinterpret_cast<size_t>(ptr), 0);
 
-	
+
 	TlsfBlockHeader* startHeader = reinterpret_cast<TlsfBlockHeader*>(startBlockLayout.HeaderStartAddress);
 
 	startHeader->isFree = false;
@@ -777,7 +820,7 @@ TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 	m_startTlsfBlock = startBlock;
 	//construct end block
 
-	
+
 
 	const size_t rawBlockEndAddress = reinterpret_cast<size_t>(ptr) + memoryPoolSize ;
 
@@ -794,7 +837,7 @@ TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 
 	TlsfBlockHeader* endBlockHeader = reinterpret_cast<TlsfBlockHeader*>(endBlockPotentialStartAdress);
 
-	
+
 	const size_t rawOffset = (endBlockPotentialStartAdress % ALIGNMENT_REQ_FOOTER);
 
 	endBlockHeader->isFree = false;
@@ -809,27 +852,27 @@ TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 	endBlock.rawStartAddress = (endBlockPotentialStartAdress - rawOffset);
 	endBlock.header = endBlockHeader;
 
-	
+
 	m_endTlsfBlock = endBlock;
 
-	
+
 
 	//now construct the usbale block
 
 	const size_t usableRawStartAddress = reinterpret_cast<size_t>(startBlock.footer) + FOOTER_SIZE;
 
-	//this address is calculated such that it is aligned for Footer 
+	//this address is calculated such that it is aligned for Footer
 	const size_t usableRawEndAddress = endBlock.rawStartAddress;
 
 
 
 	TlsfBlockHeader* usableHeader = createTlsfBlock(usableRawStartAddress, usableRawEndAddress);
-	
+
 	if (usableHeader)
 	{
 		storeInFreeList(usableHeader);
 	}
-	
+
 }
 
 TlsfAllocator::~TlsfAllocator()
@@ -854,7 +897,7 @@ void* TlsfAllocator::allocate(size_t size)
 
 
 	TlsfBlockHeader* allocatedBlock = getFreeBlock(size);
-	
+
 	if (allocatedBlock == nullptr) return nullptr;// allocation failed
 
 
@@ -876,22 +919,22 @@ void* TlsfAllocator::allocate(size_t size)
 	if (MINIMUM_VALID_TLSF_BLOCK_RAW_SIZE > remainingBytes)
 	{
 		const size_t headerStartAddress = reinterpret_cast<size_t>(allocatedBlock);
-		
+
 		return reinterpret_cast<void*> (headerStartAddress + BLOCK_HEADER_SIZE);
 	}
 	else
 	{
-		//split 
+		//split
 		TlsfBlockHeader* userBlock = createTlsfBlock(bestFitLayout.rawStartAddress, bestFitLayout.rawExclusiveEndAddress);
-		
+
 		TlsfBlockHeader* remainingBlock = createTlsfBlock( bestFitLayout.rawExclusiveEndAddress, rawEndAddress);
-	
+
 		if (userBlock == nullptr) return nullptr; // allocation failed !!
 
 		userBlock->isFree = false;
 		//store one in freelist
-		storeInFreeList(remainingBlock);//it will check for nullptr 
-		
+		storeInFreeList(remainingBlock);//it will check for nullptr
+
 		//return the carved out chunk
 		return reinterpret_cast<void*>( reinterpret_cast<size_t>(userBlock)+BLOCK_HEADER_SIZE);
 	}
@@ -906,7 +949,7 @@ void TlsfAllocator::deallocate(void* ptr)
 {
 	if (ptr == nullptr)
 	{
-		return; 
+		return;
 	}
 
 

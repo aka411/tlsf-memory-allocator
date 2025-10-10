@@ -17,20 +17,20 @@ struct TwoLevelIndex
 struct TlsfBlockHeader
 {
 
-	/*******WARNING: 	
-	
+	/*******WARNING:
+
 	The header is offset from the raw block start address to ensure proper alignment of Header if  raw block start address is not a Header aligned address.
 	This offset is indicated by the rawOffset field in the header.
 	ie. The address of Header may not be same as the start address of the raw block.
 
 	*******/
 
-	
+
 
 
 	TlsfBlockHeader* nextFreeBlock = nullptr; // Pointer to the next block in the free list
 	TlsfBlockHeader* prevFreeBlock = nullptr; // Pointer to the previous block in the free list
-	
+
 	size_t rawOffset = 0; // Offset from the start of the raw block to the header,this offset is there because of the Tlsf header alignment requirements.
 
 	size_t rawBlockSize = 0; // Size of the block, including header and footer and all padding
@@ -38,8 +38,8 @@ struct TlsfBlockHeader
 	size_t UserAreaSize = 0; //Size of the area usable by the user
 
 
-	
-	bool isFree = false; 
+
+	bool isFree = false;
 
 };
 
@@ -62,7 +62,7 @@ struct Layout
 	size_t HeaderStartAddress = 0; // Address of the TlsfBlockHeader(INCLUSIVE)
 
 	size_t userAreaStartAddress = 0; // Start address of the user area(INCLUSIVE)
-	size_t userAreaExclusiveEnd = 0; 
+	size_t userAreaExclusiveEnd = 0;
 
 	size_t paddingFooter = 0; // Padding after the user area, if any
 	size_t footerStartAddress = 0; // Address of the TlsfBlockFooter(INCLUSIVE)
@@ -75,14 +75,14 @@ struct Layout
 
 struct TlsfBlock
 {
-	
+
 
 	size_t rawStartAddress = 0;
-	TlsfBlockHeader* header = nullptr; 
+	TlsfBlockHeader* header = nullptr;
 
-	void* userArea = nullptr; 
+	void* userArea = nullptr;
 
-	TlsfFooter* footer = nullptr; 
+	TlsfFooter* footer = nullptr;
 };
 
 /*
@@ -98,33 +98,33 @@ struct TlsfBlock
 /*
 
  Special non-allocatable Block layout:
-	
+
 	Start Block :-
 +-----------------------------------------------------------------------------------------------------------------------------+
 | Padding(if any) |  TlsfBlockHeader    |    User Area (0 bytes)    |     Padding (if any)    |    TlsfBlockFooter            |
 +-----------------------------------------------------------------------------------------------------------------------------+
 
- 
-	End Block :- 
+
+	End Block :-
 +--------------------------------------------------------------------------------------------------------------------+
 | Padding(if any) |  TlsfBlockHeader    |    User Area ( 0 bytes)    |            Remaining bytes                    |
 +--------------------------------------------------------------------------------------------------------------------+
 
 
  These two blocks are special blocks that mark the end and start of the memory pool.
- 
- 
+
+
  Start Block
 
    The Start Block marks the beginning of the memory pool. It's an un-allocatable block thats meant to
    signal the allocator that it has reached the start of the memory pool.
- 
- 
+
+
  End Block
-   The End Block marks the end of the memory pool. Similar to the start block, 
+   The End Block marks the end of the memory pool. Similar to the start block,
    it's a block that an allocator shouldn't try to use for a normal allocation and signals end of memory pool.
 
- 
+
 */
 
 
@@ -157,7 +157,11 @@ protected:
 
 	const size_t MINIMUM_VALID_TLSF_BLOCK_RAW_SIZE = (ALIGNMENT_REQ_BLOCK_HEADER - 1) + BLOCK_HEADER_SIZE + 4 /*USER BYTES*/ + (ALIGNMENT_REQ_FOOTER - 1) + FOOTER_SIZE;
 
-
+	struct LeastSetBitIndexResult
+	{
+		bool found = false;
+		size_t index = 0;
+	};
 
 
 	TlsfBlock m_startTlsfBlock ;
@@ -182,7 +186,7 @@ protected:
 
 	bool checkIfSecondLevelEmpty(size_t firstLevelIndex) const;
 
-	size_t getLeastSetBitIndex(size_t bitmap) const;
+	LeastSetBitIndexResult getLeastSetBitIndex(size_t bitmap) const;
 
 	TwoLevelIndex getTwoLevelIndex(size_t size) const;
 
