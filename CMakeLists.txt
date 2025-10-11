@@ -18,8 +18,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
 if(MSVC)
-    # This enforces the /MD flag (Dynamic Runtime Library) for all targets
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC Runtime Library to use")
+    set(gtest_force_shared_crt ON CACHE BOOL "Force Google Test to use shared (DLL) run-time lib.")
 endif()
 
 add_library(tlsf-allocator STATIC 
