@@ -17,7 +17,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 
-
+if(MSVC)
+    # This enforces the /MD flag (Dynamic Runtime Library) for all targets
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC Runtime Library to use")
+endif()
 
 add_library(tlsf-allocator STATIC 
 
