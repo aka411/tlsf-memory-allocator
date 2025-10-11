@@ -1,0 +1,39 @@
+name: CI Build and Test
+
+# Run on pushes and pull requests targeting the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test:
+    # Use a build matrix to test on Linux and Windows
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    
+    # Optional: Install required tools if not pre-installed (Windows might need this for MSVC)
+    - name: Setup Tools (Windows)
+      if: runner.os == 'Windows'
+      uses: s-yakub/setup-msvc-dev-cmd@v1 
+      
+    - name: Configure CMake
+      # Using a unique build directory path for clean separation
+      run: cmake -B ${{github.workspace}}/build
+      
+    - name: Build Project
+      # The '--config Release' is important, especially on Windows where CMake defaults to Debug
+      run: cmake --build ${{github.workspace}}/build --config Release
+      
+    - name: Run Unit Tests via CTest
+      # This command invokes the CTest harness, which finds and runs all tests 
+      # registered by gtest_discover_tests()
+      run: cmake --build ${{github.workspace}}/build --target test
