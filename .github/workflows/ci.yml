@@ -19,12 +19,7 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-    
-    # Optional: Install required tools if not pre-installed (Windows might need this for MSVC)
-    - name: Setup Tools (Windows)
-      if: runner.os == 'Windows'
-      uses: s-yakub/setup-msvc-dev-cmd@v1 
-      
+
     - name: Configure CMake
       # Using a unique build directory path for clean separation
       run: cmake -B ${{github.workspace}}/build
