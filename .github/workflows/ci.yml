@@ -3,7 +3,7 @@ name: CI Build and Test
 # Run on pushes and pull requests targeting the main branch
 on:
   push:
-    branches: '**' # [ "main" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
