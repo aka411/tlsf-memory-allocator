@@ -1,4 +1,6 @@
 # Two-Level Segregated Fit (TLSF) Memory Allocator
+[![CI Build Status](https://github.com/aka411/tlsf-memory-allocator/actions/workflows/ci.yml/badge.svg)](https://github.com/aka411/tlsf-memory-allocator/actions/workflows/ci.yml)
+
 This repository contains a high-performance, custom-built Two-Level Segregated Fit (TLSF) memory allocator implementation written in C++. The TLSF algorithm is optimized for low-latency, deterministic memory management, making it ideal for real-time and embedded systems.
 
 ## 📚 Table of Contents
