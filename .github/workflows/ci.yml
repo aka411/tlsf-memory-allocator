@@ -3,7 +3,7 @@ name: CI Build and Test
 # Run on pushes and pull requests targeting the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: "*" #[ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -12,7 +12,7 @@ jobs:
     # Use a build matrix to test on Linux and Windows
     strategy:
       matrix:
-        os: [windows-latest] #[ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         
     runs-on: ${{ matrix.os }}
 
