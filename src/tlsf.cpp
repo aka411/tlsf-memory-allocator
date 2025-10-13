@@ -117,8 +117,16 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 #if defined( __GNUC__) ||  defined(__clang__)
 
 	//TODO : review this also
-	index.firstLevelIndex = (sizeof(size_t)*8) - __builtin_clzg(size)-1;
-	
+    if constexpr (sizeof(size_t) == 4) {
+        index.firstLevelIndex = ((sizeof(size_t)*8) - __builtin_clzl(size))-1; //  'long' version (32-bit on many systems)
+    } 
+    // Check if size_t is 8 bytes (64-bit)
+    else if constexpr (sizeof(size_t) == 8) {
+        index.firstLevelIndex =((sizeof(size_t)*8) -  __builtin_clzll(size)) -1; //  'long long' version (64-bit)
+    } 
+    else {
+     assert(false);
+    }
 
 
 #elif defined( _MSC_VER)
