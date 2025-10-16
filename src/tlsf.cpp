@@ -112,41 +112,34 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 		return index; // return {0, 0}
 	}
 
-
+bool intrinsicFound = false;
 	//for getting the first MSB set
 #if defined( __GNUC__) ||  defined(__clang__)
 
-	//TODO : review this also
     if constexpr (sizeof(size_t) == 4) {
         index.firstLevelIndex = ((sizeof(size_t)*8) - __builtin_clzl(size))-1; //  'long' version (32-bit on many systems)
+		intrinsicFound = true;
     } 
     // Check if size_t is 8 bytes (64-bit)
     else if constexpr (sizeof(size_t) == 8) {
         index.firstLevelIndex =((sizeof(size_t)*8) -  __builtin_clzll(size)) -1; //  'long long' version (64-bit)
+		intrinsicFound = true;
     } 
-    else {
-     assert(false);
-    }
-
 
 #elif defined( _MSC_VER)
 
 	size_t setIndex = 0;
 	unsigned char result = _BitScanReverse((unsigned long*)&setIndex,size);
+    intrinsicFound = true;
 
-	if (result == 0)
-	{
-		//This should never happen as size is not zero casue we checked it 
-		//if this happens it means something went wrong in  _BitScanReverse() or this block of code only
-
-		//TODO : write code to handle this 
-		//assert(size == 0);
-	}
 
 	index.firstLevelIndex = setIndex;
-#else
 
+#endif	
 
+	
+if(!intrinsicFound)
+{
 	//fallback to manual search
 	size_t potentialFirstBitSetIndex = (sizeof(size) * 8) - 1;
 
@@ -167,7 +160,7 @@ TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
 
 	}
 	index.firstLevelIndex = potentialFirstBitSetIndex;
-#endif
+}
 
 
 
