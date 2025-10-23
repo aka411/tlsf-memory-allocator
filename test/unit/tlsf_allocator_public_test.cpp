@@ -128,13 +128,12 @@ TEST_F(TlsfAllocatorTestPublic, ContinousAllocationDeallocationVaryingSize)
 
 
 	// Phase 1: Allocate varying-sized blocks
-	for (size_t i = 0; i < 39; ++i)
+	for (size_t i = 0; i < 50; ++i) // TODO : Dont hard code fix later
 	{
 		size_t varyingSize = baseRequestSize + dist(rng);
 
 
-		// Print the iteration and size before the allocation attempt
-		std::cout << "Attempting to allocate " << varyingSize << " bytes on iteration " << i << std::endl;
+
 		
 		void* ptr = tlsfAllocator->allocate(varyingSize);
 		if (ptr == nullptr)
