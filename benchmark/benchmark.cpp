@@ -60,16 +60,16 @@ int main(int argc, char** argv)
     // 1. Initialize and run the benchmarks
     benchmark::Initialize(&argc, argv);
     if (benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
-    benchmark::RunSpecifiedBenchmarks();
 
+    bool success = benchmark::RunSpecifiedBenchmarks();
     
     std::cout << "\n\n--- Benchmarks Finished ---\nPress ENTER to exit...";
 
 
 
     // Wait for the user to press ENTER
-    std::cin.get();
+    //std::cin.get();
 
-    return 0;
+    return success ? 0 : 1;
 }
 
