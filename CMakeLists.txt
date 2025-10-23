@@ -24,8 +24,8 @@ endif()
 add_library(tlsf-allocator STATIC 
 
 src/tlsf.cpp
-
 )
+
 
 add_library(tlsf::tlsf-allocator ALIAS tlsf-allocator)
 
@@ -69,7 +69,6 @@ if(TLSF_BUILD_BENCHMARK)
     google-benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG        v1.9.4  #  specific version for stability
-
    )
 
 
@@ -78,7 +77,6 @@ if(TLSF_BUILD_BENCHMARK)
 
   set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library." FORCE)
     
-
 
 
 
