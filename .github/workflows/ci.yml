@@ -48,11 +48,29 @@ jobs:
           fi
       shell: bash
 
-    - name: Store benchmark result
+    - name: TLSF Allocator Performance Chart
       uses: benchmark-action/github-action-benchmark@v1
       with:
-       tool: 'googlecpp'
-       output-file-path: ${{github.workspace}}/build/bin/benchmark_result.json
-       github-token: ${{ secrets.GITHUB_TOKEN }}
-       auto-push: true
+        name: '^AllocatorFixture.*' 
+        tool: 'googlecpp'
+        output-file-path: ${{github.workspace}}/build/bin/benchmark_result.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        gh-pages-branch: 'gh-pages'
+        auto-push: true
+      # ONLY RUNS ON UBUNTU: Prevents redundant pushes from the Windows job
+      if: success() && matrix.os == 'ubuntu-latest'
+
+    # 2. System Malloc Performance Chart (The Baseline)
+    # This step is explicitly filtered to only include tests starting with 'BM_System_Malloc'
+    - name: System Malloc Performance (Baseline)
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        name: '^BM_System_Malloc.*' 
+        tool: 'googlecpp'
+        output-file-path: ${{github.workspace}}/build/bin/benchmark_result.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        gh-pages-branch: 'gh-pages'
+        auto-push: true
+      #  ONLY RUNS ON UBUNTU: Prevents redundant pushes from the Windows job
+      if: success() && matrix.os == 'ubuntu-latest'
        
