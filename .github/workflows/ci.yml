@@ -35,6 +35,7 @@ jobs:
            else
              ctest --output-on-failure --verbose
            fi
+      shell: bash
       working-directory: build
 
     - name: Run Benchmarks and Save Results
@@ -45,6 +46,7 @@ jobs:
           else
             ./benchmark-app --benchmark_format=json --benchmark_out=benchmark_result.json
           fi
+      shell: bash
 
     - name: Store benchmark result
       uses: benchmark-action/github-action-benchmark@v1
