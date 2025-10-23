@@ -42,7 +42,7 @@ jobs:
       working-directory: ${{github.workspace}}/build/bin
       run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
-           ./benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
+           ./Release/benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
           else
             ./benchmark-app --benchmark_format=json --benchmark_out=benchmark_result.json
           fi
