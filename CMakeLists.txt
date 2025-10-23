@@ -80,9 +80,7 @@ endif()
     set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library." FORCE)
     
 
- ${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_app.cpp
 
-)
 
 target_link_libraries(demo-app PRIVATE tlsf::tlsf-allocator)
 
