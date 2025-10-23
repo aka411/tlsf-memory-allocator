@@ -45,4 +45,4 @@ jobs:
       uses: benchmark-action/github-action-benchmark@v1
       with:
        tool: 'googlecpp'
-       output-file-path: benchmark_result.json
+       output-file-path: ${{github.workspace}}/build/bin/benchmark_result.json
