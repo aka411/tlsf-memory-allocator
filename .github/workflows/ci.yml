@@ -58,7 +58,7 @@ jobs:
         gh-pages-branch: 'gh-pages'
         auto-push: true
       # ONLY RUNS ON UBUNTU: Prevents redundant pushes from the Windows job
-      if: success() && runner.os == 'Linux'
+      if: success() && matrix.os == 'ubuntu-latest'
 
     # 2. System Malloc Performance Chart (The Baseline)
     # This step is explicitly filtered to only include tests starting with 'BM_System_Malloc'
@@ -72,5 +72,5 @@ jobs:
         gh-pages-branch: 'gh-pages'
         auto-push: true
       #  ONLY RUNS ON UBUNTU: Prevents redundant pushes from the Windows job
-    if: success() && runner.os == 'Linux'
+      if: success() && matrix.os == 'ubuntu-latest'
        
