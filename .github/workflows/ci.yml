@@ -29,7 +29,12 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
       
     - name: Run Unit Tests via CTest
-      run: ctest --output-on-failure --verbose
+      run: |
+           if [ "${{ runner.os }}" == "Windows" ]; then
+             ctest -C Release --output-on-failure --verbose
+           else
+             ctest --output-on-failure --verbose
+           fi
       working-directory: build
 
     - name: Run Benchmarks and Save Results
