@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION  3.14)
 
 project(tlsf-allocator)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -50,3 +50,11 @@ add_executable(demo-app
 )
 
 target_link_libraries(demo-app PRIVATE tlsf::tlsf-allocator)
+
+add_executable(benchmark-app
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/benchmark.cpp
+  )
+  target_link_libraries(benchmark-app PRIVATE
+  tlsf::tlsf-allocator
+  )
