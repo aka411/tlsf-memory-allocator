@@ -3,7 +3,7 @@ name: CI Build and Test
 # Run on pushes and pull requests targeting the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: "benchmark" #[ "main"  ]
   pull_request:
     branches: [ "main" ]
 
@@ -25,9 +25,24 @@ jobs:
       run: cmake -B ${{github.workspace}}/build
       
     - name: Build Project
-      # The '--config Release' is important, especially on Windows where CMake defaults to Debug
+      
       run: cmake --build ${{github.workspace}}/build --config Release
       
     - name: Run Unit Tests via CTest
       run: ctest --output-on-failure --verbose
       working-directory: build
+
+    - name: Run Benchmarks and Save Results
+      working-directory: ${{github.workspace}}/build/
+      run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+           ./benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
+          else
+            ./benchmark-app --benchmark_format=json --benchmark_out=benchmark_result.json
+          fi
+
+    - name: Store benchmark result
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+       tool: 'googlecpp'
+       output-file-path: benchmark_result.json
