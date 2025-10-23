@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1761255001224,
+  "lastUpdate": 1761255002319,
   "repoUrl": "https://github.com/aka411/tlsf-memory-allocator",
   "entries": {
     "Benchmark": [
@@ -184,6 +184,42 @@ window.BENCHMARK_DATA = {
             "value": 333.86317446761495,
             "unit": "ns/iter",
             "extra": "iterations: 2096005\ncpu: 333.81922705337064 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "181660723+aka411@users.noreply.github.com",
+            "name": "Akash Joshi",
+            "username": "aka411"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "baab862d68b74bb26811cdd31aea1dde010fb03a",
+          "message": "Update CI workflow to use ubuntu-latest condition",
+          "timestamp": "2025-10-24T02:57:17+05:30",
+          "tree_id": "e40468b5bccb55c7c5104d69d9223b5c957d5915",
+          "url": "https://github.com/aka411/tlsf-memory-allocator/commit/baab862d68b74bb26811cdd31aea1dde010fb03a"
+        },
+        "date": 1761255001922,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "BM_System_Malloc/40960",
+            "value": 25.45347125875925,
+            "unit": "ns/iter",
+            "extra": "iterations: 27003288\ncpu: 25.44993491163002 ns\nthreads: 1"
+          },
+          {
+            "name": "AllocatorFixture/BM_Tlsf_AllocateAndFree/40960",
+            "value": 331.7865903291039,
+            "unit": "ns/iter",
+            "extra": "iterations: 2108180\ncpu: 331.7460767107173 ns\nthreads: 1"
           }
         ]
       }
