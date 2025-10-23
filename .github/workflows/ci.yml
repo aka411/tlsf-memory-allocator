@@ -33,7 +33,7 @@ jobs:
       working-directory: build
 
     - name: Run Benchmarks and Save Results
-      working-directory: ${{github.workspace}}/build/Release
+      working-directory: ${{github.workspace}}/build/bin
       run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
            ./benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
