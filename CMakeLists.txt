@@ -82,7 +82,7 @@ endif()
 
 
 
-target_link_libraries(demo-app PRIVATE tlsf::tlsf-allocator)
+
 
 add_executable(benchmark-app
 
