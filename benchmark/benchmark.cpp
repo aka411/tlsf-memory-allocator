@@ -6,23 +6,23 @@
 
 
 
-class AllocatorFixture : public benchmark::Fixture
+class MyTLSFAllocatorFixture : public benchmark::Fixture
 {
 public:
-    TlsfAllocator* tlsf;
-	const size_t POOL_SIZE = 1024 * 1024 * 1;// 1 MiB pool size
+    TlsfAllocator* m_tlsf;
+	const size_t POOL_SIZE = 1024 * 1024 * 4;// 4 MiB pool size
     void SetUp(const ::benchmark::State& state) 
     {
-        tlsf = new TlsfAllocator(POOL_SIZE);
+        m_tlsf = new TlsfAllocator(POOL_SIZE);
     }
     void TearDown(const ::benchmark::State& state) 
     {
-        delete tlsf;
+        delete m_tlsf;
     }
 };
 
 
-static void BM_System_Malloc(benchmark::State& state)
+static void SystemMalloc_AllocateAndFree(benchmark::State& state)
 {
     const size_t ALLOCATION_SIZE = state.range(0);
     for (auto _ : state)
@@ -34,21 +34,31 @@ static void BM_System_Malloc(benchmark::State& state)
     }
 }
 
-BENCHMARK(BM_System_Malloc)->Arg( 1024 * 40 );//40 KiB
+BENCHMARK(SystemMalloc_AllocateAndFree)
+    ->Args({900})              // 900 Bytes
+    ->Args({1024 * 4})        // 4 KiB
+    ->Args({1024 * 40})       // 40 KiB
+    ->Args({1024 * 512})      // 512 KiB
+    ->Args({1024 * 1024});    // 1 MiB
 
 
 
-BENCHMARK_DEFINE_F(AllocatorFixture, BM_Tlsf_AllocateAndFree) (benchmark::State& state)
+BENCHMARK_DEFINE_F(MyTLSFAllocatorFixture, MyTlsf_AllocateAndFree) (benchmark::State& state)
 {
     const size_t ALLOCATION_SIZE = state.range(0);
     for (auto _ : state)
     {
-        void* p = tlsf->allocate(ALLOCATION_SIZE);
+        void* p = m_tlsf->allocate(ALLOCATION_SIZE);
         benchmark::DoNotOptimize(p);
-        tlsf->deallocate(p);
+        m_tlsf->deallocate(p);
     }
 }
-BENCHMARK_REGISTER_F(AllocatorFixture, BM_Tlsf_AllocateAndFree)->Arg(1024 * 40);// 40 KiB
+BENCHMARK_REGISTER_F(MyTLSFAllocatorFixture, MyTlsf_AllocateAndFree)
+    ->Args({900}) 
+    ->Args({1024 * 4})
+    ->Args({1024 * 40})
+    ->Args({1024 * 512})
+    ->Args({1024 * 1024});
 
 
 //BENCHMARK_MAIN();
@@ -60,16 +70,17 @@ int main(int argc, char** argv)
     // 1. Initialize and run the benchmarks
     benchmark::Initialize(&argc, argv);
     if (benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
-    benchmark::RunSpecifiedBenchmarks();
 
+	
+    bool success = benchmark::RunSpecifiedBenchmarks();
     
-    std::cout << "\n\n--- Benchmarks Finished ---\nPress ENTER to exit...";
+    std::cout << "\n\n--- Benchmarks Finished ---\n\n";
 
 
 
     // Wait for the user to press ENTER
-    std::cin.get();
+   // std::cin.get();
 
-    return 0;
+   return success ? 0 : 1;
 }
 
