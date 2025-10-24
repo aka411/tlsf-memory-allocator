@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1761255580174,
+  "lastUpdate": 1761280518305,
   "repoUrl": "https://github.com/aka411/tlsf-memory-allocator",
   "entries": {
     "^AllocatorFixture.*": [
@@ -74,6 +74,44 @@ window.BENCHMARK_DATA = {
             "value": 332.86324477332516,
             "unit": "ns/iter",
             "extra": "iterations: 2096695\ncpu: 332.85714326594945 ns\nthreads: 1"
+          }
+        ]
+      }
+    ],
+    "Benchmark": [
+      {
+        "commit": {
+          "author": {
+            "email": "181660723+aka411@users.noreply.github.com",
+            "name": "Akash Joshi",
+            "username": "aka411"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b3416110a2b7ad0096020ae23b38ba43884ef7a3",
+          "message": "Refactor benchmark performance chart step\n\nUpdated the benchmark action step name and removed the system malloc performance chart.",
+          "timestamp": "2025-10-24T10:02:58+05:30",
+          "tree_id": "2e595a596d05717d14b250ce3fe244426fbced99",
+          "url": "https://github.com/aka411/tlsf-memory-allocator/commit/b3416110a2b7ad0096020ae23b38ba43884ef7a3"
+        },
+        "date": 1761280517401,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "BM_System_Malloc/40960",
+            "value": 25.33827210689844,
+            "unit": "ns/iter",
+            "extra": "iterations: 27108552\ncpu: 25.334886164336627 ns\nthreads: 1"
+          },
+          {
+            "name": "AllocatorFixture/BM_Tlsf_AllocateAndFree/40960",
+            "value": 332.1932004924772,
+            "unit": "ns/iter",
+            "extra": "iterations: 2101211\ncpu: 332.1564150387563 ns\nthreads: 1"
           }
         ]
       }
