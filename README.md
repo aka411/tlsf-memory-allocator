@@ -111,6 +111,7 @@ The actual free blocks are maintained within doubly linked lists, and the head o
 
 ## Performance Metrics
 As of now i have not quantified the performance of allocator and is a pending work.
+![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg)
 
 ## Prerequisites
 
