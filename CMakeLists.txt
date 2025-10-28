@@ -17,10 +17,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 
-if(MSVC)
-    set(gtest_force_shared_crt ON CACHE BOOL "Force Google Test to use shared (DLL) run-time lib.")
-endif()
-
 add_library(tlsf-allocator STATIC 
 
 src/tlsf.cpp
@@ -49,14 +45,14 @@ option(TLSF_BUILD_BENCHMARK "Build the benchmark application for the TLSF Alloca
 
 
 if(TLSF_BUILD_TESTS)
-#test folder
+  
 if(MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "Force Google Test to use shared (DLL) run-time lib.")
 endif()
 
 enable_testing()
+   #test folder
 add_subdirectory(test)
-
 endif()
 
 
