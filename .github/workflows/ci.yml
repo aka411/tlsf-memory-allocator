@@ -1,20 +1,22 @@
-name: CI Build and Test
+﻿name: CI Build and Test
 
-# Run on pushes and pull requests targeting the main branch
+
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+ # push:
+  #  branches: "benchmark" #[ "main"  ]
+  workflow_dispatch: 
 
 jobs:
   build_and_test:
-    # Use a build matrix to test on Linux and Windows
+    # Using build matrix to test on Linux and Windows
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest] #, windows-latest]
         
     runs-on: ${{ matrix.os }}
+    permissions:
+      deployments: write
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -25,9 +27,78 @@ jobs:
       run: cmake -B ${{github.workspace}}/build
       
     - name: Build Project
-      # The '--config Release' is important, especially on Windows where CMake defaults to Debug
+      
       run: cmake --build ${{github.workspace}}/build --config Release
       
     - name: Run Unit Tests via CTest
-      run: ctest --output-on-failure --verbose
+      run: |
+           if [ "${{ runner.os }}" == "Windows" ]; then
+             ctest -C Release --output-on-failure --verbose
+           else
+             ctest --output-on-failure --verbose
+           fi
+      shell: bash
       working-directory: build
+
+    - name: Run Benchmarks and Save Results
+      working-directory: ${{github.workspace}}/build/bin
+      run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+           ./Release/benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
+          else
+            ./benchmark-app --benchmark_format=json --benchmark_out=benchmark_result.json
+          fi
+      shell: bash
+
+
+    - name: Setup Python and Install Dependencies
+      uses: actions/setup-python@v5
+      with:
+         python-version: '3.x'
+      
+    - name: Install Python Dependencies
+      run: pip install -r requirements.txt
+
+
+    - name: Generate Graphs and Prepare for Deployment
+      run: |
+          # Define the temporary folder for all deployed content
+          OUTPUT_DIR="gh-pages-output"
+          
+          # Create the output directory structure
+          mkdir -p $OUTPUT_DIR/data 
+
+          # Execute the Python script
+          # Arguments: [Input JSON Path] [Output Directory Path]
+          python scripts/generate_graphs.py ./build/bin/benchmark_result.json $OUTPUT_DIR
+          
+          # Copy the raw JSON to the deployment folder for public access
+          cp ./build/bin/benchmark_result.json $OUTPUT_DIR/data/benchmark_result.json
+          echo "Deployment folder contents prepared in: $OUTPUT_DIR"
+          
+      # --- 3. Artifact Upload (For Direct Download) ---
+    - name: ⬆️ Upload Job Artifacts (Graphs & JSON)
+      uses: actions/upload-artifact@v4
+      with:
+         name: allocator-benchmark-results # Name of the downloadable ZIP file
+         path: gh-pages-output/           # Path to the folder to zip and upload
+         retention-days: 7                # Keep for one week
+
+      # --- 4. GitHub Pages Deployment (For Public Hosting) ---
+    - name: Configure Pages Environment
+      uses: actions/configure-pages@v5 # Sets up necessary environment variables
+      
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+         path: gh-pages-output/ # Uploads the folder contents for Pages deployment
+          
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4 # Triggers the final site update
+        
+    - name: Report Deployment URL
+      run: |
+          echo "Graphs are live at: ${{ steps.deployment.outputs.page_url }}"
+      # ONLY RUNS ON UBUNTU: Prevents redundant pushes from the Windows job
+     # if: success() && matrix.os == 'ubuntu-latest'

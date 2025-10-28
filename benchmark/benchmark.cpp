@@ -198,12 +198,12 @@ int main(int argc, char** argv)
     
     bool success = benchmark::RunSpecifiedBenchmarks();
     
-    std::cout << "\n\n--- Benchmarks Finished ---\nPress ENTER to exit...";
+    std::cout << "\n\n--- Benchmarks Finished ---\n\n";
 
 
 
     // Wait for the user to press ENTER
-    std::cin.get();
+   // std::cin.get();
 
     return success ? 0 : 1;
 }

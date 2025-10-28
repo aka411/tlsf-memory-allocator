@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(FetchContent)
+
 # Set a common output directory for executables and libraries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -20,8 +22,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_library(tlsf-allocator STATIC 
 
 src/tlsf.cpp
-
 )
+
 
 add_library(tlsf::tlsf-allocator ALIAS tlsf-allocator)
 
@@ -66,7 +68,6 @@ endif()
     google-benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG        v1.9.4  #  specific version for stability
-
     )
 
 

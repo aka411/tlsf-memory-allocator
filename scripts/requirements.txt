@@ -1,0 +1,5 @@
+# requirements.txt
+matplotlib
+pandas
+numpy
+json
