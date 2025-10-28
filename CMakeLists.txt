@@ -70,14 +70,14 @@ if(TLSF_BUILD_BENCHMARK)
     GIT_TAG        v1.9.4  #  specific version for stability
    )
 
-
-
-  FetchContent_MakeAvailable(google-benchmark)
-
   set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable testing of the benchmark library." FORCE)
   set(BENCHMARK_USE_LIBCXX OFF CACHE BOOL "Disable Build and test using libc++ as the standard library." FORCE)
   set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "Disable building the unit tests which depend on gtest" FORCE)
   set(BENCHMARK_USE_BUNDLED_GTEST OFF CACHE BOOL "Disable bundled GoogleTest. If disabled, the find_package(GTest) will be used." FORCE)
+
+  FetchContent_MakeAvailable(google-benchmark)
+
+
 
 
 
