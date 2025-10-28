@@ -110,7 +110,7 @@ The actual free blocks are maintained within doubly linked lists, and the head o
 * **Custom Memory Management:** Handles memory blocks with custom headers and footers to manage block metadata, including size and status.
 
 ## Performance Metrics
-As of now i have not quantified the performance of allocator and is a pending work.
+Benchmarking was done using Google Benchmark and you can see the code used to bench mark in `benchmark` folder.
 ![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg)
 
 ## Prerequisites
