@@ -57,6 +57,7 @@ jobs:
          python-version: '3.x'
       
     - name: Install Python Dependencies
+      working-directory: ${{github.workspace}}/scripts
       run: pip install -r requirements.txt
 
 
