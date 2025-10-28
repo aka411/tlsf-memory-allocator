@@ -79,9 +79,9 @@ def plot_performance(df_AllocDeallocCycle_MixedSize):
                  marker='o', linestyle='-', label=name,
                  linewidth=2.5)
 
-    plt.title('Performance Graph', fontsize=14)
-    plt.ylabel('Average Time per N Allocation-Deallocation of Mixed Sizes (nanoseconds)', fontsize=12)
-    plt.xlabel('N Allocations per iteration ', fontsize=12)
+    plt.title('Performance Graph', fontsize=13)
+    plt.ylabel('Avg Time per N Alloc-Dealloc of Mixed Sizes (nanoseconds)', fontsize=10)
+    plt.xlabel('N Allocations per iteration ', fontsize=10)
     plt.xticks(group['num_ops']) # Ensure clear ticks
     plt.legend(title='Allocator')
     plt.grid(linestyle='--', alpha=0.7)
