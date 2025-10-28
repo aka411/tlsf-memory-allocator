@@ -124,7 +124,7 @@ Comparing this TLSF allocator against the standard library malloc() (the system 
 
  **A fair comparison would be comparing it against other TLSF allocators or similar dedicated pool-based, low-latency allocators.**
  
-![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg)
+![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg?v=1730147391)
 
 ### Output Files
 
