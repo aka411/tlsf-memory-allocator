@@ -126,6 +126,14 @@ Comparing this TLSF allocator against the standard library malloc() (the system 
  
 ![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg?v=1730147391)
 
+### ⚠️ Benchmark Caveat
+
+The performance metrics above were generated on **GitHub-hosted runners** (`ubuntu-latest`). These environments use shared, virtualized hardware and are subject to varying background loads.
+
+**Therefore, these results are not suitable for measuring absolute performance.** They should only be used to **monitor performance trends** and **detect significant regressions** (slowdowns) introduced by new code changes.
+
+**If you want more accurate benchmarking you can clone this repo and build it and run the benchmarking on your machine and generate the graphs. I will add the instructions to run the benchmarking and to generate the performance graph later.**
+
 ### Output Files
 
 * [Download Raw Benchmark Data (JSON)](https://aka411.github.io/tlsf-memory-allocator/data/benchmark_result.json)
