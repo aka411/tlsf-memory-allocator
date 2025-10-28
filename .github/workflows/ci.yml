@@ -48,6 +48,7 @@ jobs:
       shell: bash
       working-directory: build
 
+
     - name: Run Benchmarks and Save Results
       working-directory: ${{github.workspace}}/build/bin
       run: |
@@ -63,6 +64,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
          python-version: '3.x'
+
       
     - name: Install Python Dependencies
       working-directory: ${{github.workspace}}/scripts
@@ -84,6 +86,7 @@ jobs:
           # Copy the raw JSON to the deployment folder for public access
           cp ./build/bin/benchmark_result.json $OUTPUT_DIR/data/benchmark_result.json
           echo "Deployment folder contents prepared in: $OUTPUT_DIR"
+
           
       # --- 3. Artifact Upload (For Direct Download) ---
     - name: Upload Pages Artifact
@@ -93,19 +96,23 @@ jobs:
          path: gh-pages-output/           # Path to the folder to zip and upload
          retention-days: 7                # Keep for one week
 
+
       # --- 4. GitHub Pages Deployment (For Public Hosting) ---
     - name: Configure Pages Environment
       uses: actions/configure-pages@v5 # Sets up necessary environment variables
+
       
     - name: Upload Job Artifacts (Graphs & JSON Download)
       uses: actions/upload-pages-artifact@v3
       with:
         name: allocator-benchmark-results
         path: gh-pages-output/
+
           
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4 # Triggers the final site update
+
         
     - name: Report Deployment URL
       run: |
