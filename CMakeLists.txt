@@ -50,7 +50,7 @@ if(TLSF_BUILD_TESTS)
   
 if(MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "Force Google Test to use shared (DLL) run-time lib.")
-endif()
+ endif()
 
 enable_testing()
    #test folder
@@ -62,30 +62,27 @@ endif()
 
 
 
-  if(TLSF_BUILD_BENCHMARK)
+if(TLSF_BUILD_BENCHMARK)
 
   FetchContent_Declare(
     google-benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG        v1.9.4  #  specific version for stability
-    )
+   )
 
 
 
-    FetchContent_MakeAvailable(google-benchmark)
+  FetchContent_MakeAvailable(google-benchmark)
 
-    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library." FORCE)
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library." FORCE)
     
 
- ${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_app.cpp
 
-)
 
-target_link_libraries(demo-app PRIVATE tlsf::tlsf-allocator)
 
-add_executable(benchmark-app
+  add_executable(benchmark-app
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/benchmark.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/benchmark.cpp
   )
 
 
@@ -94,4 +91,4 @@ add_executable(benchmark-app
   benchmark::benchmark
   )
 
-  endif()
+endif()
