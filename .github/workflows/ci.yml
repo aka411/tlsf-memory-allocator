@@ -15,10 +15,16 @@ jobs:
         
     runs-on: ${{ matrix.os }}
     permissions:
-      deployments: write
-      contents: write
+      contents: read
       pages: write
       id-token: write
+    
+
+    environment:
+      name: github-pages
+
+      url: ${{ steps.deployment.outputs.page_url }} 
+
       
     steps:
     - name: Checkout Code
@@ -91,10 +97,11 @@ jobs:
     - name: Configure Pages Environment
       uses: actions/configure-pages@v5 # Sets up necessary environment variables
       
-    - name: Upload Pages Artifact
+    - name: Upload Job Artifacts (Graphs & JSON Download)
       uses: actions/upload-pages-artifact@v3
       with:
-         path: gh-pages-output/ # Uploads the folder contents for Pages deployment
+        name: allocator-benchmark-results
+        path: gh-pages-output/
           
     - name: Deploy to GitHub Pages
       id: deployment
