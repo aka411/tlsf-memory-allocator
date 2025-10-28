@@ -74,8 +74,8 @@ if(TLSF_BUILD_BENCHMARK)
 
   FetchContent_MakeAvailable(google-benchmark)
 
-  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library." FORCE)
-    
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable testing of the benchmark library." FORCE)
+  set(BENCHMARK_USE_LIBCXX OFF CACHE BOOL "Build and test using libc++ as the standard library." FORCE)
 
 
 
