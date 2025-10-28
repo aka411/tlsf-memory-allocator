@@ -86,8 +86,8 @@ def plot_performance(df_AllocDeallocCycle_MixedSize):
     plt.legend(title='Allocator')
     plt.grid(linestyle='--', alpha=0.7)
 
-    plt.savefig(os.path.join(OUTPUT_DIR, 'Performance_line_plot.svg'), format='svg', bbox_inches='tight')
-    print(f"Generated {os.path.join(OUTPUT_DIR, 'Performance_line_plot.svg')}")
+    plt.savefig(os.path.join(OUTPUT_DIR, 'performance_line_plot.svg'), format='svg', bbox_inches='tight')
+    print(f"Generated {os.path.join(OUTPUT_DIR, 'performance_line_plot.svg')}")
     plt.close()
 
 # --- 3. Main Execution ---
