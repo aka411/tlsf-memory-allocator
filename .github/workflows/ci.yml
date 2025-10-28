@@ -86,7 +86,7 @@ jobs:
           echo "Deployment folder contents prepared in: $OUTPUT_DIR"
           
       # --- 3. Artifact Upload (For Direct Download) ---
-    - name: ⬆️ Upload Job Artifacts (Graphs & JSON)
+    - name: Upload Pages Artifact
       uses: actions/upload-artifact@v4
       with:
          name: allocator-benchmark-results # Name of the downloadable ZIP file
