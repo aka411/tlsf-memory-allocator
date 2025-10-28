@@ -1,21 +1,29 @@
-name: CI Build and Test
+﻿name: CI Build and Test
 
-# Run on pushes and pull requests targeting the main branch
+
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch: 
 
 jobs:
   build_and_test:
-    # Use a build matrix to test on Linux and Windows
+    # Using build matrix to test on Linux and Windows
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest,windows-latest]
         
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
 
+    environment:
+      name: github-pages
+
+      url: ${{ steps.deployment.outputs.page_url }} 
+
+      
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -25,9 +33,94 @@ jobs:
       run: cmake -B ${{github.workspace}}/build
       
     - name: Build Project
-      # The '--config Release' is important, especially on Windows where CMake defaults to Debug
+      
       run: cmake --build ${{github.workspace}}/build --config Release
       
     - name: Run Unit Tests via CTest
-      run: ctest --output-on-failure --verbose
+      run: |
+           if [ "${{ runner.os }}" == "Windows" ]; then
+             ctest -C Release --output-on-failure --verbose
+           else
+             ctest --output-on-failure --verbose
+           fi
+      shell: bash
       working-directory: build
+
+
+    - name: Run Benchmarks and Save Results
+      if: success() && matrix.os == 'ubuntu-latest'
+      working-directory: ${{github.workspace}}/build/bin
+      run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+           ./Release/benchmark-app.exe --benchmark_format=json --benchmark_out=benchmark_result.json
+          else
+            ./benchmark-app --benchmark_format=json --benchmark_out=benchmark_result.json
+          fi
+      shell: bash
+
+
+    - name: Setup Python and Install Dependencies
+      if: success() && matrix.os == 'ubuntu-latest'
+      uses: actions/setup-python@v5
+      with:
+         python-version: '3.x'
+
+      
+    - name: Install Python Dependencies
+      if: success() && matrix.os == 'ubuntu-latest'
+      working-directory: ${{github.workspace}}/scripts
+      run: pip install -r requirements.txt
+
+
+    - name: Generate Graphs and Prepare for Deployment
+      if: success() && matrix.os == 'ubuntu-latest'
+      run: |
+          # Define the temporary folder for all deployed content
+          OUTPUT_DIR="gh-pages-output"
+          
+          # Create the output directory structure
+          mkdir -p $OUTPUT_DIR/data 
+
+          # Execute the Python script
+          # Arguments: [Input JSON Path] [Output Directory Path]
+          python scripts/plot_benchmark.py ./build/bin/benchmark_result.json $OUTPUT_DIR
+          
+          # Copy the raw JSON to the deployment folder for public access
+          cp ./build/bin/benchmark_result.json $OUTPUT_DIR/data/benchmark_result.json
+          echo "Deployment folder contents prepared in: $OUTPUT_DIR"
+
+          
+      # --- 3. Artifact Upload (For Direct Download) ---
+    - name: Upload Pages Artifact
+      if: success() && matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+         name: downloadable-benchmark-results # Renamed to prevent conflict
+         path: gh-pages-output/           # Path to the folder to zip and upload
+         retention-days: 7                # Keep for one week
+
+
+      # --- 4. GitHub Pages Deployment (For Public Hosting) ---
+    - name: Configure Pages Environment
+      if: success() && matrix.os == 'ubuntu-latest'
+      uses: actions/configure-pages@v5 # Sets up necessary environment variables
+
+      
+    - name: Upload Job Artifacts (Graphs & JSON Download)
+      if: success() && matrix.os == 'ubuntu-latest'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: gh-pages-output/
+
+          
+    - name: Deploy to GitHub Pages
+      if: success() && matrix.os == 'ubuntu-latest'
+      id: deployment
+      uses: actions/deploy-pages@v4 # Triggers the final site update
+
+        
+    - name: Report Deployment URL
+      if: success() && matrix.os == 'ubuntu-latest'
+      run: |
+          echo "Graphs are live at: ${{ steps.deployment.outputs.page_url }}"
+

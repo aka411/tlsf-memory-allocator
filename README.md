@@ -110,7 +110,25 @@ The actual free blocks are maintained within doubly linked lists, and the head o
 * **Custom Memory Management:** Handles memory blocks with custom headers and footers to manage block metadata, including size and status.
 
 ## Performance Metrics
-As of now i have not quantified the performance of allocator and is a pending work.
+Benchmarking was done using Google Benchmark and you can see the code used to bench mark in `benchmark` folder.
+
+### Important Note on Comparisons:
+
+Comparing this TLSF allocator against the standard library malloc() (the system allocator) is not a fair comparison due to fundamental architectural differences:
+
+* **Scope of Management:** This TLSF implementation manages its own pre-allocated memory pool and avoids all operating system overhead (like kernel system calls) during run-time allocation.
+
+* **System Interaction:** The standard malloc() is designed for general-purpose high throughput and often has non-deterministic latency. While most small allocations are handled rapidly in user-space, `malloc()` must periodically rely on system calls (such as `brk/sbrk` or `mmap`) to acquire memory from the OS. These kernel operations cause significant, unpredictable overhead that a pre-allocated pool-based allocator is designed to eliminate.
+
+* **Conclusion:** If this TLSF allocator were forced to make system calls for some memory request, its performance would also be substantially slower. The benefit of this allocator lies in its O(1) low-latency guarantees within its managed pool.
+
+ **A fair comparison would be comparing it against other TLSF allocators or similar dedicated pool-based, low-latency allocators.**
+ 
+![performance line plot](https://aka411.github.io/tlsf-memory-allocator/performance_line_plot.svg?v=1730147391)
+
+### Output Files
+
+* [Download Raw Benchmark Data (JSON)](https://aka411.github.io/tlsf-memory-allocator/data/benchmark_result.json)
 
 ## Prerequisites
 
