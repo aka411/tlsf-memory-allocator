@@ -71,7 +71,7 @@ jobs:
 
           # Execute the Python script
           # Arguments: [Input JSON Path] [Output Directory Path]
-          python scripts/generate_graphs.py ./build/bin/benchmark_result.json $OUTPUT_DIR
+          python scripts/plot_benchmark.py ./build/bin/benchmark_result.json $OUTPUT_DIR
           
           # Copy the raw JSON to the deployment folder for public access
           cp ./build/bin/benchmark_result.json $OUTPUT_DIR/data/benchmark_result.json
