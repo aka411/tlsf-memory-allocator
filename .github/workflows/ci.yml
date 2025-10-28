@@ -2,8 +2,8 @@
 
 
 on:
- # push:
-  #  branches: "benchmark" #[ "main"  ]
+  push:
+    branches: "benchmark" #[ "main"  ]
   workflow_dispatch: 
 
 jobs:
