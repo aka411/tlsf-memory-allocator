@@ -88,6 +88,8 @@ struct TlsfBlock
 
 /*
 
+
+
  General user allocatable Block Layout:
 +--------------------------------------------------------------------------------------------------------------------+
 | Padding(if any) |  TlsfBlockHeader    |    User Area     |     Padding (if any)    |    TlsfBlockFooter            |
@@ -185,13 +187,13 @@ protected:
 	//this method assumes that  (rawEndAddress - FOOTER_SIZE) is aligned for footer else we will have problem finding footer and header
 	TlsfBlockHeader* createTlsfBlock(const size_t rawStartAddress, const size_t rawEndAddress) const;
 
-	bool checkIfSecondLevelEmpty(size_t firstLevelIndex) const;
+	bool checkIfSecondLevelEmpty(const size_t firstLevelIndex) const;
 
-	LeastSetBitIndexResult getLeastSetBitIndex(size_t bitmap) const;
+	LeastSetBitIndexResult getLeastSetBitIndex(const size_t bitmap) const;
 
-	TwoLevelIndex getTwoLevelIndex(size_t size) const;
+	TwoLevelIndex getTwoLevelIndex(const size_t size) const;
 
-	TwoLevelIndex getTwoLevelIndexWithFreeBlock(size_t size) const;
+	TwoLevelIndex getTwoLevelIndexWithFreeBlock(const size_t size) const;
 
 
 
@@ -220,6 +222,6 @@ public:
 
 	~TlsfAllocator();
 
-	void* allocate(size_t size);
+	void* allocate(const size_t size);
 	void deallocate(void* ptr);
 };

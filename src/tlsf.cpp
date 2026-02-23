@@ -7,12 +7,9 @@
 #include <cassert>
 
 
-bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
+bool TlsfAllocator::checkIfSecondLevelEmpty(const size_t firstLevelIndex) const
 {
 	
-	// To check if Second Level Bitmap of a particular First level is empty
-	//TODO : Write code just to check if its zero no need for calling getLeastSetBitIndex()
-
 
 
 	if (firstLevelIndex >= sizeof(m_firstLevelBitmap) * 8) //bits
@@ -20,15 +17,8 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 		return true;//returning true because index is out of bounds
 	}
 
-	const LeastSetBitIndexResult leastSetBitIndexResult = getLeastSetBitIndex(m_secondLevelBitmap[firstLevelIndex]);
 
-	if(!leastSetBitIndexResult.found )
-	{
-		return true;
-	}
-
-	return false;
-
+	return m_secondLevelBitmap[firstLevelIndex] == 0;
 
 
 }
@@ -44,7 +34,7 @@ bool TlsfAllocator::checkIfSecondLevelEmpty(size_t firstLevelIndex) const
 
 
 
-TlsfAllocator::LeastSetBitIndexResult TlsfAllocator::getLeastSetBitIndex(size_t bitmap) const
+TlsfAllocator::LeastSetBitIndexResult TlsfAllocator::getLeastSetBitIndex(const size_t bitmap) const
 {
 	
 	
@@ -80,6 +70,7 @@ TlsfAllocator::LeastSetBitIndexResult TlsfAllocator::getLeastSetBitIndex(size_t 
 
 #else
 	//fallback to manual search
+	//rewrite to use binary search??
 	setIndex = 0;
 	for(size_t i = 0; i < sizeof(bitmap) * 8; ++i)
 	{
@@ -103,7 +94,7 @@ TlsfAllocator::LeastSetBitIndexResult TlsfAllocator::getLeastSetBitIndex(size_t 
 
 
 
-TwoLevelIndex TlsfAllocator::getTwoLevelIndex(size_t size) const
+TwoLevelIndex TlsfAllocator::getTwoLevelIndex(const size_t size) const
 {
 	TwoLevelIndex index;
 
@@ -190,8 +181,7 @@ if(!intrinsicFound)
 
 
 
-TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(size_t size) const
-
+TwoLevelIndex TlsfAllocator::getTwoLevelIndexWithFreeBlock(const size_t size) const
 {
 	TwoLevelIndex twoLevelIndex = getTwoLevelIndex(size);
 
@@ -892,10 +882,10 @@ TlsfAllocator::~TlsfAllocator()
 
 
 
-void* TlsfAllocator::allocate(size_t size)
+void* TlsfAllocator::allocate(const size_t size)
 {
 
-
+	assert(size != 0);
 
 	TlsfBlockHeader* allocatedBlock = getFreeBlock(size);
 
