@@ -775,6 +775,7 @@ TlsfAllocator::TlsfAllocator(const size_t memoryPoolSize) // in bytes
 
 	void* ptr = reinterpret_cast<void*>(malloc(memoryPoolSize));
 
+	assert(ptr != nullptr);
 	if (ptr == nullptr) return; // not pretty
 
 
