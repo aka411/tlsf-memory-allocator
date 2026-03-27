@@ -95,10 +95,7 @@ struct TlsfBlock
 | Padding(if any) |  TlsfBlockHeader    |    User Area     |     Padding (if any)    |    TlsfBlockFooter            |
 +--------------------------------------------------------------------------------------------------------------------+
 
-*/
 
-
-/*
 
  Special non-allocatable Block layout:
 
