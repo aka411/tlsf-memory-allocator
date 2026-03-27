@@ -886,6 +886,10 @@ void* TlsfAllocator::allocate(const size_t size)
 {
 
 	assert(size != 0);
+	if(size == 0 ) 
+	{
+		return nullptr;
+	}
 
 	TlsfBlockHeader* allocatedBlock = getFreeBlock(size);
 
