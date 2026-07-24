@@ -130,7 +130,7 @@ Comparing this TLSF allocator against the standard library malloc() (the system 
 
 The performance metrics above were generated on **GitHub-hosted runners** (`ubuntu-latest`). These environments use shared, virtualized hardware and are subject to varying background loads.
 
-**Therefore, these results are not suitable for measuring absolute performance.** They should only be used to **monitor performance trends** and **detect significant regressions** (slowdowns) introduced by new code changes.
+**Therefore, these results are not suitable for measuring absolute performance.**
 
 **If you want more accurate benchmarking you can clone this repo and build it and run the benchmarking on your machine and generate the graphs. I will add the instructions to run the benchmarking and to generate the performance graph later.**
 
